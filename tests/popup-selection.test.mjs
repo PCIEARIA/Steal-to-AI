@@ -96,9 +96,10 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   );
   assert.ok(writes.some((value) => value.isPicking === true));
   assert.equal(closeCount, 1);
-  assert.match(previewContent.textContent, /^<!-- Companion skill instruction: Check whether the steal-to-ai-component skill is available/);
-  assert.match(previewContent.textContent, /If it is unavailable, ask the user once whether they want to install it/);
-  assert.match(previewContent.textContent, /If they decline or installation is unavailable, continue without blocking or asking again/);
+  assert.match(previewContent.textContent, /^<!-- Companion skill instruction: Check whether the steal-to-ai-component skill is available in your environment and read its version field/);
+  assert.match(previewContent.textContent, /This export requires version 0\.1\.1 or newer/);
+  assert.match(previewContent.textContent, /If it is unavailable, has no version, or is older, ask the user once whether they want to install or update it/);
+  assert.match(previewContent.textContent, /If they decline or installation\/update is unavailable, continue without blocking or asking again/);
   assert.match(previewContent.textContent, /<!-- AI reconstruction instruction: Ask the user first whether this asset needs a liquid-glass treatment\./);
   assert.match(previewContent.textContent, /Before copying any code, ask whether the user owns the rights or has permission to copy and integrate the referenced code\./);
   assert.match(previewContent.textContent, /If the user confirms, copy only the necessary component code, preserve required attribution and license notices, and comply with its license; do not copy the whole repository or replace their project stack\./);

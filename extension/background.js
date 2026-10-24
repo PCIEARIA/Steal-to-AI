@@ -5,7 +5,8 @@ function safePart(value) {
 }
 
 const liquidGlassDecisionPrompt = "Ask the user first whether this asset needs a liquid-glass treatment. If yes, use https://github.com/martin65536/liquid-glass-webgl as an implementation reference. Before copying any code, ask whether the user owns the rights or has permission to copy and integrate the referenced code. If the user confirms, copy only the necessary component code, preserve required attribution and license notices, and comply with its license; do not copy the whole repository or replace their project stack. If not, adapt only the necessary techniques. If no, recreate the asset faithfully from the captured code below.";
-const companionSkillPrompt = 'Check whether the steal-to-ai-component skill is available in your environment. If it is, use it and continue without asking. If it is unavailable, ask the user once whether they want to install it from https://github.com/PCIEARIA/Steal-to-AI/tree/main/skills/steal-to-ai-component for a better component-integration workflow. If they decline or installation is unavailable, continue without blocking or asking again.';
+const companionSkillVersion = '0.1.1';
+const companionSkillPrompt = 'Check whether the steal-to-ai-component skill is available in your environment and read its version field. This export requires version ' + companionSkillVersion + ' or newer. If the installed Skill meets that version, use it and continue without asking. If it is unavailable, has no version, or is older, ask the user once whether they want to install or update it from https://github.com/PCIEARIA/Steal-to-AI/tree/main/skills/steal-to-ai-component for a better component-integration workflow. If they decline or installation/update is unavailable, continue without blocking or asking again.';
 
 function formatCode(payload) {
   const references = [

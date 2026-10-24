@@ -1,6 +1,7 @@
 ---
 name: steal-to-ai-component
 description: Add or adapt one UI component from a Steal to AI export in an existing project. Use when a user provides a Steal to AI capture and wants that component integrated; do not use for full-page cloning.
+version: 0.1.1
 ---
 
 # Steal to AI Component
@@ -13,6 +14,12 @@ Use this skill when the user has selected one UI component with Steal to AI and 
 - Inspect the host project's framework, design system, file structure, and insertion point before editing.
 - Treat the capture as visual and structural reference. Preserve useful proportions, typography, color, spacing, states, animation, and explicit interaction hints when they fit the host project.
 - Prefer the host project's existing primitives and dependencies. Add a dependency only when it is necessary and the user approves it.
+
+## Version Synchronization
+
+- When an export asks for a companion Skill version check, inspect this Skill's frontmatter version before using it.
+- If the installed version meets or exceeds the export's stated minimum, proceed without asking.
+- If the Skill is unavailable, unversioned, or older, ask the user once whether they want to install or update it from the supplied repository URL. If they decline or updating is unavailable, continue without blocking and follow the export directly.
 
 ## Source Safety
 
