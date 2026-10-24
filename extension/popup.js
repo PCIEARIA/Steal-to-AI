@@ -110,7 +110,9 @@ async function startPicking() {
     if (chrome.runtime.lastError) {
       status.textContent = text('normalSite');
       chrome.storage.local.set({isPicking: false});
+      return;
     }
+    window.close();
   });
   status.textContent = text('picking');
 }
