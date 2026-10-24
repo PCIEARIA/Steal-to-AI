@@ -91,8 +91,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message && message.type === 'STAI_EXTRACTION') {
     const payload = {...message.payload};
     const capture = payload.capture;
+    const language = message.language === 'en' ? 'en' : 'zh';
     delete payload.capture;
     chrome.storage.local.set({lastExtraction: payload, isPicking: false});
+
+    if (sender.tab && Number.isInteger(sender.tab.id)) {
+      chrome.tabs.sendMessage(sender.tab.id, {type: 'STAI_SHOW_CAPTURE_READY', title: payload.title, language}).catch(() => {});
+    }
 
     if (capture && sender.tab && Number.isInteger(sender.tab.windowId)) {
       downloadSelectionCapture(sender.tab.windowId, capture, payload.title)

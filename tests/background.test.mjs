@@ -41,3 +41,28 @@ test('starting from onboarding returns to the original tab, starts picking, and 
   assert.equal(state.isPicking, true);
   assert.equal(JSON.stringify(response), JSON.stringify({ok: true}));
 });
+
+test('an extracted element notifies its source page that code is ready to copy', async () => {
+  const source = await readFile(new URL('../extension/background.js', import.meta.url), 'utf8');
+  const state = {};
+  const sent = [];
+  let onMessage;
+  const chrome = {
+    runtime: {onMessage: {addListener(listener) { onMessage = listener; }}},
+    storage: {local: {async get() { return {}; }, async set(next) { Object.assign(state, next); }}},
+    tabs: {
+      async sendMessage(tabId, message) { sent.push([tabId, message]); }
+    },
+    downloads: {async download() {}},
+    scripting: {async executeScript() {}}
+  };
+
+  vm.runInNewContext(source, {chrome, FileReader: class {}, OffscreenCanvas: class {}, fetch() {}});
+  onMessage({type: 'STAI_EXTRACTION', payload: {title: 'button · 120 × 40', html: '<button></button>', css: ''}}, {tab: {id: 42, windowId: 9}}, () => {});
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(
+    JSON.stringify(sent),
+    JSON.stringify([[42, {type: 'STAI_SHOW_CAPTURE_READY', title: 'button · 120 × 40', language: 'zh'}]])
+  );
+});

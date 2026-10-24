@@ -11,6 +11,7 @@
   const blocked = new Set(['SCRIPT', 'STYLE', 'LINK', 'IFRAME', 'OBJECT', 'EMBED', 'TEMPLATE', 'NOSCRIPT']);
   const staticProperties = new Set(['transition', 'animation']);
   let activeStop = null;
+  let captureToast = null;
 
   function camel(property) { return property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()); }
   function kebab(property) { return property.replace(/[A-Z]/g, (letter) => '-' + letter.toLowerCase()); }
@@ -21,6 +22,37 @@
       effectMode: ['smart', 'all', 'static'].includes(value && value.effectMode) ? value.effectMode : 'smart',
       screenshotMode: value && value.screenshotMode === 'download' ? 'download' : 'off'
     };
+  }
+
+  function showCaptureReady(title, language) {
+    if (captureToast) captureToast.remove();
+    const toast = document.createElement('div');
+    const english = language === 'en';
+    toast.dataset.staiOverlay = 'true';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.textContent = english
+      ? 'Captured ' + title + '. Open Steal to AI to copy your code.'
+      : '已擷取 ' + title + '。重新開啟 Steal to AI，按「複製程式碼」即可複製。';
+    Object.assign(toast.style, {
+      position: 'fixed', right: '18px', bottom: '18px', zIndex: '2147483647', maxWidth: '340px',
+      padding: '11px 14px', border: '1px solid rgba(215,255,100,.72)', borderRadius: '8px',
+      color: '#f5f7f1', background: '#12151d', boxShadow: '0 14px 34px rgba(0,0,0,.28)',
+      font: '700 12px/1.45 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      letterSpacing: '-.01em', cursor: 'pointer', opacity: '0', transform: 'translateY(8px)',
+      transition: 'opacity .18s ease, transform .18s ease'
+    });
+    toast.addEventListener('click', () => toast.remove());
+    document.documentElement.append(toast);
+    captureToast = toast;
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+    });
+    window.setTimeout(() => {
+      if (captureToast === toast) captureToast = null;
+      toast.remove();
+    }, 8000);
   }
 
   function styleFor(element, pseudo, effectMode) {
@@ -177,7 +209,7 @@
       event.preventDefault(); event.stopImmediatePropagation();
       const payload = extract(target, preferences);
       stop();
-      chrome.runtime.sendMessage({type: 'STAI_EXTRACTION', payload});
+      chrome.runtime.sendMessage({type: 'STAI_EXTRACTION', payload, language: preferences.language});
     }
     function keydown(event) {
       if (event.key !== 'Escape') return;
@@ -192,6 +224,10 @@
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message && message.type === 'STAI_START_PICKING') {
       startPicker(message.preferences);
+      sendResponse({ok: true});
+    }
+    if (message && message.type === 'STAI_SHOW_CAPTURE_READY') {
+      showCaptureReady(message.title || 'element', message.language);
       sendResponse({ok: true});
     }
   });
