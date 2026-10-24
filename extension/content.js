@@ -21,6 +21,7 @@
   function rule(className, style, suffix = '') { return '.' + className + suffix + ' {\n' + cssText(style) + '\n}'; }
   function normalizedPreferences(value) {
     return {
+      language: value && value.language === 'en' ? 'en' : 'zh',
       effectMode: ['smart', 'all', 'static'].includes(value && value.effectMode) ? value.effectMode : 'smart',
       screenshotMode: value && value.screenshotMode === 'download' ? 'download' : 'off'
     };

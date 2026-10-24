@@ -6,6 +6,7 @@ import vm from 'node:vm';
 async function startPicker({sendMessage, cursor = 'none', computedValues = {}, computedStyle, clipboardWrites = [], preferences = {effectMode: 'smart'}}) {
   const source = await readFile(new URL('../extension/content.js', import.meta.url), 'utf8');
   const listeners = new Map();
+  const created = [];
   let onMessage;
   class Element {}
   const documentElement = {
@@ -17,7 +18,11 @@ async function startPicker({sendMessage, cursor = 'none', computedValues = {}, c
     documentElement, doctype: {name: 'html'},
     body: {},
     styleSheets: [],
-    createElement() { return {dataset: {}, style: {}, setAttribute() {}, addEventListener() {}, append() {}, remove() {}}; },
+    createElement() {
+      const element = {dataset: {}, style: {}, setAttribute() {}, addEventListener() {}, append() {}, remove() {}};
+      created.push(element);
+      return element;
+    },
     querySelectorAll() { return []; },
     addEventListener(type, handler) { listeners.set(type, handler); },
     removeEventListener() {}
@@ -55,7 +60,7 @@ async function startPicker({sendMessage, cursor = 'none', computedValues = {}, c
   });
   onMessage({type: 'STAI_START_PICKING', preferences}, {}, () => {});
   return {
-    listeners, document, Element,
+    listeners, document, Element, created,
     dispatch(message) {
       return new Promise((resolve) => {
         const keepChannel = onMessage(message, {}, resolve);
@@ -64,6 +69,25 @@ async function startPicker({sendMessage, cursor = 'none', computedValues = {}, c
     }
   };
 }
+
+test('the picker hint stays in English when English preferences start the selection', async () => {
+  const {listeners, Element, created} = await startPicker({
+    sendMessage() {},
+    preferences: {language: 'en', effectMode: 'smart', screenshotMode: 'off'}
+  });
+  const component = new Element();
+  component.nodeType = 1;
+  component.tagName = 'BUTTON';
+  component.dataset = {};
+  component.textContent = 'Save';
+  component.closest = () => null;
+  component.getBoundingClientRect = () => ({top: 20, left: 30, width: 120, height: 42});
+
+  listeners.get('pointermove')({target: component});
+
+  assert.match(created[2].textContent, /Shift\+click adds to bundle/);
+  assert.doesNotMatch(created[2].textContent, /Shift+點選/);
+});
 
 test('blocked source elements are ignored instead of crashing the picker', async () => {
   const sent = [];
