@@ -109,10 +109,9 @@ Enable **儲存選取區域截圖** / **Save selected-area screenshot** in the c
 
 ```bash
 npm test
-python3 -m http.server 4173
 ```
 
-Open `http://127.0.0.1:4173/demo/first-run.html` to preview the onboarding, or `http://127.0.0.1:4173/demo/` for the interactive picker demo.
+Load the `extension/` directory through Chrome's **Load unpacked** workflow, then test the picker on regular `http` or `https` pages.
 
 ## License
 
