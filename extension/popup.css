@@ -34,6 +34,9 @@ h1 { max-width: 280px; margin: 0; color: #f8faf5; font-size: 28px; letter-spacin
 .capture-action { gap: 8px; margin-top: 20px; }
 .target { width: 11px; height: 11px; border: 1.5px solid #10140d; border-radius: 50%; box-shadow: 0 0 0 2px #d7ff64, 0 0 0 3.5px #10140d; }
 .status { min-height: 30px; margin: 9px 1px 10px; color: #88909c; font-size: 10px; line-height: 1.45; }
+.update-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -2px 0 10px; padding: 7px 8px; border: 1px solid rgba(215,255,100,.36); border-radius: 6px; color: #dce8be; background: rgba(215,255,100,.07); font-size: 9px; line-height: 1.35; }
+.update-status button { flex: 0 0 auto; border: 0; padding: 4px 0 4px 7px; color: #d7ff64; background: transparent; font-size: 9px; font-weight: 850; }
+.update-status button:hover { color: #efffb2; }
 .settings-section { padding: 11px 0 10px; border-top: 1px solid #2a303a; }
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; color: #f2f4ef; font-size: 11px; font-weight: 800; }
 .section-heading small { color: #777f8c; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 600; }

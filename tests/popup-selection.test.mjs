@@ -30,6 +30,9 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   const workspace = makeNode();
   const screenshot = makeNode();
   const languageToggle = makeNode();
+  const update = makeNode();
+  const updateMessage = makeNode();
+  const updateLink = makeNode();
   const zh = makeNode(); zh.dataset.language = 'zh';
   const en = makeNode(); en.dataset.language = 'en';
   const smart = makeNode(); smart.value = 'smart';
@@ -39,7 +42,8 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   const nodes = new Map([
     ['#start', start], ['#copy', copy], ['#status', status], ['#title', title], ['#result-detail', detail],
     ['#capture-result', result], ['#code-preview', preview], ['#code-preview-content', previewContent],
-    ['#workspace', workspace], ['#screenshot', screenshot], ['[data-language-toggle]', languageToggle], ['.choice-list', choiceList]
+    ['#workspace', workspace], ['#screenshot', screenshot], ['[data-language-toggle]', languageToggle], ['.choice-list', choiceList],
+    ['#update-status', update], ['#update-message', updateMessage], ['#update-link', updateLink]
   ]);
   const writes = [];
   const sent = [];
@@ -54,7 +58,7 @@ test('starting the picker closes the popup after the page picker is ready', asyn
     }
   };
   const chrome = {
-    runtime: {lastError: null, sendMessage() {}},
+    runtime: {lastError: null, getManifest() { return {version: '0.1.1'}; }, sendMessage() {}},
     storage: {
       local: {
         get() { return Promise.resolve({hasSeenOnboarding: true, preferences: {language: 'en'}, isPicking: false}); },
@@ -63,11 +67,11 @@ test('starting the picker closes the popup after the page picker is ready', asyn
     },
     tabs: {
       query() { return Promise.resolve([{id: 42}]); },
-      sendMessage(tabId, message, callback) { sent.push([tabId, message]); callback(); }
+      sendMessage(tabId, message, callback) { sent.push([tabId, message]); callback(); }, create() { return Promise.resolve(); }
     }
   };
 
-  vm.runInNewContext(source, {chrome, document, window: {close() { closeCount += 1; }, setTimeout() {}}, navigator: {clipboard: {writeText() {}}}});
+  vm.runInNewContext(source, {chrome, document, fetch: async () => ({ok: false}), window: {close() { closeCount += 1; }, setTimeout() {}}, navigator: {clipboard: {writeText() {}}}});
   await new Promise((resolve) => setImmediate(resolve));
   await start.handlers.click();
 

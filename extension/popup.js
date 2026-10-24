@@ -16,7 +16,8 @@ const strings = {
     all: '全部帶上', allDesc: '盡量保留所有可取得的互動規則',
     static: '純靜態', staticDesc: '不帶動畫、狀態或過場',
     screenshot: '視覺參考截圖', saveScreenshot: '儲存選取區域截圖', screenshotDesc: '裁成 PNG，直接下載到 Downloads',
-    saved: 'PNG 已下載', footer: '來源腳本、事件與追蹤屬性不會被帶走。'
+    saved: 'PNG 已下載', footer: '來源腳本、事件與追蹤屬性不會被帶走。',
+    updateAvailable: '發現 v{version} 新版本。', getUpdate: '前往更新'
   },
   en: {
     onboardingKicker: 'Bring web details to AI',
@@ -35,7 +36,8 @@ const strings = {
     all: 'Include all', allDesc: 'Keeps every accessible interaction rule',
     static: 'Static only', staticDesc: 'No motion, states, or transitions',
     screenshot: 'Visual reference', saveScreenshot: 'Save selected-area screenshot', screenshotDesc: 'Crop as PNG and download to Downloads',
-    saved: 'PNG downloaded', footer: 'Source scripts, events, and tracking attributes stay behind.'
+    saved: 'PNG downloaded', footer: 'Source scripts, events, and tracking attributes stay behind.',
+    updateAvailable: 'Update v{version} is available.', getUpdate: 'Get update'
   }
 };
 
@@ -53,6 +55,11 @@ const screenshot = document.querySelector('#screenshot');
 const languageButtons = document.querySelectorAll('[data-language]');
 const languageToggle = document.querySelector('[data-language-toggle]');
 const effects = document.querySelectorAll('input[name="effectMode"]');
+const updateStatus = document.querySelector('#update-status');
+const updateMessage = document.querySelector('#update-message');
+const updateLink = document.querySelector('#update-link');
+const updateManifestUrl = 'https://raw.githubusercontent.com/PCIEARIA/Steal-to-AI/main/extension/manifest.json';
+const updateRepoUrl = 'https://github.com/PCIEARIA/Steal-to-AI';
 let preferences = {...defaults};
 let resultText = '';
 
@@ -65,6 +72,36 @@ function normalizePreferences(value = {}) {
 }
 
 function text(key) { return strings[preferences.language][key]; }
+
+function format(key, values) {
+  return text(key).replace(/\{(\w+)\}/g, (_match, name) => values[name] || '');
+}
+
+function isNewerVersion(remote, local) {
+  const remoteParts = String(remote).split('.').map(Number);
+  const localParts = String(local).split('.').map(Number);
+  const length = Math.max(remoteParts.length, localParts.length);
+  for (let index = 0; index < length; index += 1) {
+    const difference = (remoteParts[index] || 0) - (localParts[index] || 0);
+    if (difference !== 0) return difference > 0;
+  }
+  return false;
+}
+
+async function checkForUpdate() {
+  if (typeof fetch !== 'function') return;
+  try {
+    const response = await fetch(updateManifestUrl, {cache: 'no-store'});
+    if (!response.ok) return;
+    const remote = await response.json();
+    const localVersion = chrome.runtime.getManifest().version;
+    if (!isNewerVersion(remote.version, localVersion)) return;
+    updateMessage.textContent = format('updateAvailable', {version: remote.version});
+    updateLink.textContent = text('getUpdate');
+    updateLink.hidden = false;
+    updateStatus.hidden = false;
+  } catch {}
+}
 
 function renderCopy() {
   document.documentElement.lang = preferences.language === 'zh' ? 'zh-Hant' : 'en';
@@ -134,6 +171,7 @@ chrome.storage.local.get(['lastExtraction', 'isPicking', 'hasSeenOnboarding', 'p
   showWorkspace();
   showResult(state.lastExtraction);
   if (state.isPicking) status.textContent = text('picking');
+  checkForUpdate();
 });
 
 start.addEventListener('click', startPicking);
@@ -148,6 +186,8 @@ screenshot.addEventListener('change', async () => {
   preferences.screenshotMode = screenshot.checked ? 'download' : 'off';
   await persistPreferences();
 });
+
+updateLink.addEventListener('click', () => chrome.tabs.create({url: updateRepoUrl}));
 
 copy.addEventListener('click', async () => {
   try {
