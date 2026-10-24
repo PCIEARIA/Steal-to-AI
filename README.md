@@ -12,6 +12,7 @@ Steal to AI is a Chrome Manifest V3 extension that turns a visible webpage eleme
 - Produces cleaned HTML plus computed CSS instead of a vague screenshot reference.
 - Can preserve interaction rules and animation information, or export static-only CSS.
 - Keeps SVG filter IDs and their `filter` / `backdrop-filter` references, so effects such as liquid-glass refraction and reflection remain portable.
+- Adds an AI reconstruction instruction to every component export: ask whether it is liquid glass first; when confirmed, retrieve [GooseHyperGlassCDN](https://github.com/Minecraftgoose/GooseHyperGlassCDN) as the liquid-glass runtime, otherwise rebuild strictly from the captured HTML/CSS.
 - Adds an explicit AI interaction hint when the selected component exposes a draggable surface.
 - Promotes a full-size absolute base layer to its containing composite card, so overlaid effects are not left behind when selecting card text.
 - Optionally saves a pixel-accurate PNG crop of the selected region to Downloads.
@@ -33,7 +34,7 @@ No build step, package manager, or Chrome Web Store upload is required. The inst
 5. Choose `Steal-to-AI/extension` — **not** the repository root.
 6. Pin **Steal to AI** from Chrome's Extensions menu.
 
-You should now see **Steal to AI**, version `0.1.6`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
+You should now see **Steal to AI**, version `0.1.7`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
 
 ## Quick install for AI coding agents
 
@@ -61,6 +62,8 @@ Install the local Steal to AI Chrome extension for me. Do not build it and do no
 4. Hover to preview an element, then click once to capture it. Press `Esc` to cancel.
 5. Use **複製程式碼** / **Copy code** in the on-page confirmation to put the HTML/CSS directly on your clipboard. Reopen Steal to AI whenever you want to preview the generated code or change export settings.
 6. For an AI that needs the complete page context, use **究極模式 → 複製完整頁面原始碼** / **Ultimate mode → Copy full page source**. This copies the page's HTML source to your clipboard; linked CSS, JavaScript, and images remain linked by their original URLs.
+
+Every component-code export starts with an AI instruction. Your AI must first ask whether the selected asset is **liquid glass**. If you confirm it is, it should retrieve the GooseHyperGlassCDN project and use that runtime to rebuild the optical effect; otherwise it should reconstruct only from the captured HTML/CSS that follows.
 
 ## Update checks
 
