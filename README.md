@@ -11,6 +11,7 @@ Steal to AI is a Chrome Manifest V3 extension that turns a visible webpage eleme
 - Selects a visible DOM element directly from an ordinary webpage.
 - Produces cleaned HTML plus computed CSS instead of a vague screenshot reference.
 - Can preserve interaction rules and animation information, or export static-only CSS.
+- Offers two focused exports for each selected UI component: direct HTML/CSS or an AI component prompt that tells an AI to add only that component to an existing project.
 - Keeps SVG filter IDs and their `filter` / `backdrop-filter` references, so effects such as liquid-glass refraction and reflection remain portable.
 - Adds an AI reconstruction instruction to every component export: ask whether liquid glass is needed first; when confirmed, use [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl) only as an implementation reference and adapt the necessary WebGL techniques into the user's existing project.
 - Adds an explicit AI interaction hint when the selected component exposes a draggable surface.
@@ -60,7 +61,7 @@ Install the local Steal to AI Chrome extension for me. Do not build it and do no
 2. Open Steal to AI and choose your language on first launch.
 3. Press **開始選取** / **Start picking**. The small panel closes before selection mode starts, so your next click is the element you want.
 4. Hover to preview an element, then click once to capture it. Press `Esc` to cancel.
-5. Use **複製程式碼** / **Copy code** in the on-page confirmation to put the HTML/CSS directly on your clipboard. Reopen Steal to AI whenever you want to preview the generated code or change export settings.
+5. Reopen Steal to AI and choose **複製程式碼** / **Copy code** for direct HTML/CSS, or **複製元件提示詞** / **Copy component prompt** to copy a scoped instruction that tells your AI to add only the selected UI component to your existing project. You can also preview the generated code or change export settings.
 6. For an AI that needs the complete page context, use **究極模式 → 下載完整網站包** / **Ultimate mode → Download full page package**. It downloads one offline HTML snapshot with the rendered DOM, accessible CSS, images, CSS background assets, and external JavaScript source preserved as inert reference text. Resources that cannot be fetched safely stay linked and are noted in the download notification.
 
 Every component-code export starts with an AI instruction. Your AI must first ask whether the selected asset needs **liquid glass**. If you confirm it does, [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl) is only a technical reference: the AI should adapt the smallest needed WebGL techniques into your existing project, not copy the repository or replace your project's stack. Otherwise it should reconstruct only from the captured HTML/CSS that follows.

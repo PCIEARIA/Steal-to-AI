@@ -61,7 +61,10 @@
         <div class="capture-result" id="capture-result" hidden>
           <div class="result-dot" aria-hidden="true"></div>
           <div><strong id="title"></strong><small id="result-detail"></small></div>
-          <button id="copy" type="button" disabled data-copy="copy"></button>
+          <div class="result-actions">
+            <button id="copy" type="button" disabled data-copy="copy"></button>
+            <button id="copy-component-prompt" class="prompt-copy" type="button" disabled data-copy="copyComponentPrompt"></button>
+          </div>
         </div>
         <section class="code-preview" id="code-preview" hidden aria-label="Selected element code preview">
           <div class="code-preview-heading"><span data-copy="codePreview"></span><small data-copy="codePreviewHint"></small></div>

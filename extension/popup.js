@@ -10,7 +10,7 @@ const strings = {
     ready: '準備好了，挑一個你想帶走的元素。',
     picking: '正在選取。點頁面上的元素，Esc 可取消。',
     noTab: '找不到可用的頁面。', normalSite: '請先開啟一般網頁，再試一次。',
-    captured: '已選取元素，可複製程式碼。', selected: '已選取', copyPrompt: '下一步：按「複製程式碼」把 Clean HTML/CSS 放進剪貼簿。', codePreview: '程式碼預覽', codePreviewHint: '將會完整複製', copied: '已複製 Clean HTML/CSS。', copy: '複製程式碼', copiedShort: '已複製',
+    captured: '已選取元素，可複製程式碼。', selected: '已選取', copyPrompt: '可複製程式碼，或把「元件提示詞」交給你的 AI。', codePreview: '程式碼預覽', codePreviewHint: '將會完整複製', copied: '已複製 Clean HTML/CSS。', copy: '複製程式碼', copiedShort: '已複製', copyComponentPrompt: '複製元件提示詞', componentPromptCopied: '已複製元件提示詞。貼到你的 AI 編程工具即可。', componentPromptCopiedShort: '提示詞已複製',
     dynamic: '動態效果', dynamicHint: '輸出規則',
     smart: '智慧模式（預設）', smartDesc: '偵測到互動、動畫或偽元素才帶上',
     all: '全部帶上', allDesc: '盡量保留所有可取得的互動規則',
@@ -31,7 +31,7 @@ const strings = {
     ready: 'Ready when you spot something worth keeping.',
     picking: 'Picking is on. Click an element, or press Esc to cancel.',
     noTab: 'No usable page is open.', normalSite: 'Open a normal website, then try again.',
-    captured: 'Element selected and ready to copy.', selected: 'Selected', copyPrompt: 'Next: press Copy code to put the Clean HTML/CSS on your clipboard.', codePreview: 'Code preview', codePreviewHint: 'Full code will be copied', copied: 'Clean HTML/CSS copied.', copy: 'Copy code', copiedShort: 'Copied',
+    captured: 'Element selected and ready to copy.', selected: 'Selected', copyPrompt: 'Copy the code, or send a component prompt to your AI.', codePreview: 'Code preview', codePreviewHint: 'Full code will be copied', copied: 'Clean HTML/CSS copied.', copy: 'Copy code', copiedShort: 'Copied', copyComponentPrompt: 'Copy component prompt', componentPromptCopied: 'Component prompt copied. Paste it into your AI coding tool.', componentPromptCopiedShort: 'Prompt copied',
     dynamic: 'Dynamic effects', dynamicHint: 'export rules',
     smart: 'Smart (default)', smartDesc: 'Adds states, motion, or pseudo-elements only when found',
     all: 'Include all', allDesc: 'Keeps every accessible interaction rule',
@@ -46,6 +46,7 @@ const strings = {
 const defaults = {language: 'zh', effectMode: 'smart', screenshotMode: 'off'};
 const start = document.querySelector('#start');
 const copy = document.querySelector('#copy');
+const copyComponentPrompt = document.querySelector('#copy-component-prompt');
 const status = document.querySelector('#status');
 const title = document.querySelector('#title');
 const resultDetail = document.querySelector('#result-detail');
@@ -65,6 +66,7 @@ const updateManifestUrl = 'https://raw.githubusercontent.com/PCIEARIA/Steal-to-A
 const updateRepoUrl = 'https://github.com/PCIEARIA/Steal-to-AI';
 let preferences = {...defaults};
 let resultText = '';
+let lastPayload = null;
 const liquidGlassDecisionPrompt = "Ask the user first whether this asset needs a liquid-glass treatment. If yes, use https://github.com/martin65536/liquid-glass-webgl as an implementation reference: adapt only the necessary WebGL liquid-glass techniques into the user's existing project; do not copy the whole repository or replace their project stack. If no, recreate the asset faithfully from the captured code below.";
 
 function formatCode(payload) {
@@ -77,6 +79,26 @@ function formatCode(payload) {
   }
   const reference = references.length ? references.join('\n') + '\n\n' : '';
   return reference + payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
+}
+
+function formatComponentPrompt(payload) {
+  const code = formatCode(payload);
+  if (preferences.language === 'zh') {
+    return [
+      '請將下列 UI 元件加入我目前的專案。',
+      '規則：\n- 只建立或修改這一個元件；不要重做整個頁面。\n- 沿用我現有的技術棧、設計系統、檔案結構與元件規範。\n- 保留擷取到的外觀、尺寸比例、互動狀態與動畫。\n- 若外部圖片、字型或素材不能直接使用，請以本地可維護的方式重建。\n- 完成後告訴我修改了哪些檔案。',
+      '元件：\n' + (payload.title || '已選取元件'),
+      payload.sourceUrl ? '來源頁面：\n' + payload.sourceUrl : '',
+      '擷取元件：\n' + code
+    ].filter(Boolean).join('\n\n');
+  }
+  return [
+    'Add the UI component below to my existing project.',
+    'Rules:\n- Create or modify only this component; do not rebuild the whole page.\n- Follow my existing stack, design system, file structure, and component conventions.\n- Preserve the captured visual details, proportions, interactions, and motion.\n- Rebuild inaccessible external assets with maintainable local equivalents.\n- Tell me which files you changed when finished.',
+    'Component:\n' + (payload.title || 'Selected component'),
+    payload.sourceUrl ? 'Source page:\n' + payload.sourceUrl : '',
+    'Captured component:\n' + code
+  ].filter(Boolean).join('\n\n');
 }
 
 function normalizePreferences(value = {}) {
@@ -140,6 +162,7 @@ async function persistPreferences() {
 
 function showResult(payload) {
   if (!payload) return;
+  lastPayload = payload;
   resultText = formatCode(payload);
   title.textContent = text('selected') + '：' + payload.title;
   resultDetail.textContent = payload.screenshotFileName
@@ -149,6 +172,7 @@ function showResult(payload) {
   captureResult.hidden = false;
   codePreview.hidden = false;
   copy.disabled = false;
+  copyComponentPrompt.disabled = false;
   status.textContent = text('captured');
 }
 
@@ -226,6 +250,18 @@ copy.addEventListener('click', async () => {
     copy.textContent = text('copiedShort');
     status.textContent = text('copied');
     window.setTimeout(() => { copy.textContent = text('copy'); }, 1200);
+  } catch {
+    status.textContent = 'Clipboard access was blocked.';
+  }
+});
+
+copyComponentPrompt.addEventListener('click', async () => {
+  if (!lastPayload) return;
+  try {
+    await navigator.clipboard.writeText(formatComponentPrompt(lastPayload));
+    copyComponentPrompt.textContent = text('componentPromptCopiedShort');
+    status.textContent = text('componentPromptCopied');
+    window.setTimeout(() => { copyComponentPrompt.textContent = text('copyComponentPrompt'); }, 1200);
   } catch {
     status.textContent = 'Clipboard access was blocked.';
   }

@@ -13,7 +13,7 @@ function node() {
 test('popup shows a GitHub update when the remote extension version is newer', async () => {
   const source = await readFile(new URL('../extension/popup.js', import.meta.url), 'utf8');
   const start = node(); const copy = node(); const status = node(); const title = node(); const detail = node();
-  const result = node(); const preview = node(); const previewContent = node(); const workspace = node(); const screenshot = node(); const copyPageSource = node();
+  const result = node(); const preview = node(); const previewContent = node(); const workspace = node(); const screenshot = node(); const copyPageSource = node(); const copyComponentPrompt = node();
   const languageToggle = node(); const choiceList = node();
   const update = node(); update.hidden = true;
   const updateMessage = node();
@@ -23,7 +23,7 @@ test('popup shows a GitHub update when the remote extension version is newer', a
   const nodes = new Map([
     ['#start', start], ['#copy', copy], ['#status', status], ['#title', title], ['#result-detail', detail],
     ['#capture-result', result], ['#code-preview', preview], ['#code-preview-content', previewContent],
-    ['#workspace', workspace], ['#screenshot', screenshot], ['#copy-page-source', copyPageSource], ['[data-language-toggle]', languageToggle], ['.choice-list', choiceList],
+    ['#workspace', workspace], ['#screenshot', screenshot], ['#copy-page-source', copyPageSource], ['#copy-component-prompt', copyComponentPrompt], ['[data-language-toggle]', languageToggle], ['.choice-list', choiceList],
     ['#update-status', update], ['#update-message', updateMessage], ['#update-link', updateLink]
   ]);
   const document = {

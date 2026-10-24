@@ -30,6 +30,7 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   const workspace = makeNode();
   const screenshot = makeNode();
   const copyPageSource = makeNode();
+  const copyComponentPrompt = makeNode();
   const languageToggle = makeNode();
   const update = makeNode();
   const updateMessage = makeNode();
@@ -43,7 +44,7 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   const nodes = new Map([
     ['#start', start], ['#copy', copy], ['#status', status], ['#title', title], ['#result-detail', detail],
     ['#capture-result', result], ['#code-preview', preview], ['#code-preview-content', previewContent],
-    ['#workspace', workspace], ['#screenshot', screenshot], ['#copy-page-source', copyPageSource], ['[data-language-toggle]', languageToggle], ['.choice-list', choiceList],
+    ['#workspace', workspace], ['#screenshot', screenshot], ['#copy-page-source', copyPageSource], ['#copy-component-prompt', copyComponentPrompt], ['[data-language-toggle]', languageToggle], ['.choice-list', choiceList],
     ['#update-status', update], ['#update-message', updateMessage], ['#update-link', updateLink]
   ]);
   const writes = [];
