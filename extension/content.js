@@ -54,6 +54,22 @@
     return element;
   }
 
+  function compositeCardTarget(element) {
+    const parent = element && element.parentElement;
+    if (!parent || parent === document.body || parent === document.documentElement) return element;
+    if (getComputedStyle(element).getPropertyValue('position').trim() !== 'absolute') return element;
+    const parentPosition = getComputedStyle(parent).getPropertyValue('position').trim();
+    if (parentPosition !== 'relative' && parentPosition !== 'absolute') return element;
+    const elementBox = element.getBoundingClientRect();
+    const parentBox = parent.getBoundingClientRect();
+    const fillsParent = elementBox.width >= parentBox.width * 0.88 && elementBox.height >= parentBox.height * 0.88;
+    if (!fillsParent) return element;
+    const positionedSiblings = Array.from(parent.children || []).filter((sibling) => (
+      sibling !== element && getComputedStyle(sibling).getPropertyValue('position').trim() === 'absolute'
+    ));
+    return positionedSiblings.length >= 2 ? parent : element;
+  }
+
   async function copyCode(text) {
     try {
       await navigator.clipboard.writeText(text);
@@ -291,7 +307,7 @@
       if (!(target instanceof Element) || target.dataset.staiOverlay || target.closest('[data-stai-overlay]')) return null;
       if (target === document.documentElement || target === document.body) return null;
       if (blocked.has(target.tagName)) return null;
-      return nearestComponentTarget(target);
+      return compositeCardTarget(nearestComponentTarget(target));
     }
     function stop() {
       document.removeEventListener('pointermove', move, true);

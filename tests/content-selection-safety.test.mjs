@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-async function startPicker({sendMessage, cursor = 'none', computedValues = {}}) {
+async function startPicker({sendMessage, cursor = 'none', computedValues = {}, computedStyle}) {
   const source = await readFile(new URL('../extension/content.js', import.meta.url), 'utf8');
   const listeners = new Map();
   let onMessage;
@@ -24,7 +24,14 @@ async function startPicker({sendMessage, cursor = 'none', computedValues = {}}) 
     Element,
     Node: {TEXT_NODE: 3, ELEMENT_NODE: 1},
     CSSStyleRule: class {},
-    getComputedStyle() { return {getPropertyValue(property) { return computedValues[property] || (property === 'cursor' ? cursor : 'none'); }, animationName: 'none'}; },
+    getComputedStyle(element) {
+      return {
+        getPropertyValue(property) {
+          return (computedStyle && computedStyle(element, property)) || computedValues[property] || (property === 'cursor' ? cursor : 'none');
+        },
+        animationName: 'none'
+      };
+    },
     window: {setTimeout() {}},
     location: {href: 'https://example.com/designs/launch'},
     requestAnimationFrame(callback) { callback(); },
@@ -173,4 +180,45 @@ test('an extracted SVG-style filter keeps a renamed ID and rewrites its backdrop
 
   assert.match(sent[0].payload.html, /id="stai-div-id-1"/);
   assert.match(sent[0].payload.css, /backdrop-filter: url\(#stai-div-id-1\);/);
+});
+
+test('a full-card absolute base layer resolves to its composite card instead of losing overlay effects', async () => {
+  const sent = [];
+  const {listeners, Element} = await startPicker({
+    sendMessage(message) { sent.push(message); },
+    computedStyle(element, property) {
+      if (property !== 'position') return 'none';
+      return element.role === 'card' ? 'relative' : 'absolute';
+    }
+  });
+  function element(role, width, height, textContent = '') {
+    const value = new Element();
+    value.role = role;
+    value.nodeType = 1;
+    value.tagName = 'DIV';
+    value.dataset = {};
+    value.attributes = [];
+    value.childNodes = [];
+    value.children = [];
+    value.textContent = textContent;
+    value.closest = () => null;
+    value.getBoundingClientRect = () => ({top: 20, left: 30, width, height});
+    value.cloneNode = () => ({
+      attributes: [], removeAttribute() {}, setAttribute() {}, appendChild() {}, outerHTML: '<div></div>'
+    });
+    return value;
+  }
+  const card = element('card', 766, 460);
+  const baseLayer = element('base', 764, 458, 'Liquid glass');
+  const imageLayer = element('image', 300, 360, '');
+  const lensLayer = element('lens', 210, 150, '');
+  baseLayer.parentElement = card;
+  imageLayer.parentElement = card;
+  lensLayer.parentElement = card;
+  card.children = [baseLayer, imageLayer, lensLayer];
+  card.childNodes = card.children;
+
+  listeners.get('click')({target: baseLayer, preventDefault() {}, stopImmediatePropagation() {}});
+
+  assert.equal(sent[0].payload.title, 'div · 766 × 460');
 });

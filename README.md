@@ -13,6 +13,7 @@ Steal to AI is a Chrome Manifest V3 extension that turns a visible webpage eleme
 - Can preserve interaction rules and animation information, or export static-only CSS.
 - Keeps SVG filter IDs and their `filter` / `backdrop-filter` references, so effects such as liquid-glass refraction and reflection remain portable.
 - Adds an explicit AI interaction hint when the selected component exposes a draggable surface.
+- Promotes a full-size absolute base layer to its containing composite card, so overlaid effects are not left behind when selecting card text.
 - Optionally saves a pixel-accurate PNG crop of the selected region to Downloads.
 - Removes source scripts, event handlers, tracking attributes, and other page noise from the export.
 
@@ -32,7 +33,7 @@ No build step, package manager, or Chrome Web Store upload is required. The inst
 5. Choose `Steal-to-AI/extension` — **not** the repository root.
 6. Pin **Steal to AI** from Chrome's Extensions menu.
 
-You should now see **Steal to AI**, version `0.1.4`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
+You should now see **Steal to AI**, version `0.1.5`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
 
 ## Quick install for AI coding agents
 
