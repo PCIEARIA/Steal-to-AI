@@ -20,10 +20,12 @@ Use this skill when the user has selected one UI component with Steal to AI and 
 - Do not fetch arbitrary source-site code just because it appears in the capture.
 - Replace inaccessible external images, fonts, or other assets with maintainable local equivalents and explain the substitution.
 - Preserve the source URL as attribution and reference, not as permission to copy the whole site.
+- If the user asks to directly copy referenced code, ask whether they own the rights or have permission to copy and integrate it before doing so.
+- After explicit confirmation, copy only the necessary component code, retain required attribution and license notices, and comply with the source license. Do not copy the whole repository or unrelated page code.
 
 ## Liquid Glass
 
-When the export contains the liquid-glass instruction, ask the user first whether this component should keep a liquid-glass treatment. If the answer is yes, use the linked liquid-glass project as a technical reference only and adapt the smallest needed technique to the host project. Do not copy that repository or replace the host project's stack. If the answer is no, recreate the component from the captured HTML and CSS.
+When the export contains the liquid-glass instruction, ask the user first whether this component should keep a liquid-glass treatment. If the answer is yes, use the linked liquid-glass project as a reference. Before copying any code, ask whether the user owns the rights or has permission to copy and integrate it. If the user confirms, copy only the necessary component code, preserve required attribution and license notices, and comply with its license; never copy the whole repository or replace the host project's stack. If the user does not confirm, adapt only the necessary techniques. If the answer is no, recreate the component from the captured HTML and CSS.
 
 ## Delivery
 

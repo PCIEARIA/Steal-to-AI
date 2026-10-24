@@ -100,7 +100,8 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   assert.match(previewContent.textContent, /If it is unavailable, ask the user once whether they want to install it/);
   assert.match(previewContent.textContent, /If they decline or installation is unavailable, continue without blocking or asking again/);
   assert.match(previewContent.textContent, /<!-- AI reconstruction instruction: Ask the user first whether this asset needs a liquid-glass treatment\./);
-  assert.match(previewContent.textContent, /If yes, use https:\/\/github\.com\/martin65536\/liquid-glass-webgl as an implementation reference: adapt only the necessary WebGL liquid-glass techniques into the user's existing project; do not copy the whole repository or replace their project stack\. If no, recreate the asset faithfully from the captured code below\. -->/);
+  assert.match(previewContent.textContent, /Before copying any code, ask whether the user owns the rights or has permission to copy and integrate the referenced code\./);
+  assert.match(previewContent.textContent, /If the user confirms, copy only the necessary component code, preserve required attribution and license notices, and comply with its license; do not copy the whole repository or replace their project stack\./);
   assert.match(previewContent.textContent, /<!-- Source reference: https:\/\/example\.com\/components\/button -->/);
   assert.match(previewContent.textContent, /\.stai-button__lens is draggable/);
 
