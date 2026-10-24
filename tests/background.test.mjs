@@ -58,7 +58,7 @@ test('an extracted element notifies its source page that code is ready to copy',
   };
 
   vm.runInNewContext(source, {chrome, FileReader: class {}, OffscreenCanvas: class {}, fetch() {}});
-  onMessage({type: 'STAI_EXTRACTION', payload: {title: 'button · 120 × 40', html: '<button></button>', css: ''}}, {tab: {id: 42, windowId: 9}}, () => {});
+  onMessage({type: 'STAI_EXTRACTION', payload: {title: 'button · 120 × 40', sourceUrl: 'https://example.com/button', html: '<button></button>', css: ''}}, {tab: {id: 42, windowId: 9}}, () => {});
   await new Promise((resolve) => setImmediate(resolve));
 
   assert.equal(
@@ -67,7 +67,7 @@ test('an extracted element notifies its source page that code is ready to copy',
       type: 'STAI_SHOW_CAPTURE_READY',
       title: 'button · 120 × 40',
       language: 'zh',
-      code: '<button></button>\n\n<style>\n\n</style>'
+      code: '<!-- Source reference: https://example.com/button -->\n\n<button></button>\n\n<style>\n\n</style>'
     }]])
   );
 });

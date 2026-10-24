@@ -2,6 +2,11 @@ function safePart(value) {
   return String(value || 'element').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) || 'element';
 }
 
+function formatCode(payload) {
+  const reference = payload.sourceUrl ? '<!-- Source reference: ' + payload.sourceUrl + ' -->\n\n' : '';
+  return reference + payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
+}
+
 function dataUrlFromBlob(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -96,7 +101,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.set({lastExtraction: payload, isPicking: false});
 
     if (sender.tab && Number.isInteger(sender.tab.id)) {
-      const code = payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
+      const code = formatCode(payload);
       chrome.tabs.sendMessage(sender.tab.id, {type: 'STAI_SHOW_CAPTURE_READY', title: payload.title, language, code}).catch(() => {});
     }
 

@@ -61,7 +61,19 @@ test('starting the picker closes the popup after the page picker is ready', asyn
     runtime: {lastError: null, getManifest() { return {version: '0.1.1'}; }, sendMessage() {}},
     storage: {
       local: {
-        get() { return Promise.resolve({hasSeenOnboarding: true, preferences: {language: 'en'}, isPicking: false}); },
+        get() {
+          return Promise.resolve({
+            hasSeenOnboarding: true,
+            preferences: {language: 'en'},
+            isPicking: false,
+            lastExtraction: {
+              title: 'button · 160 × 48',
+              sourceUrl: 'https://example.com/components/button',
+              html: '<button class="stai-button">Save</button>',
+              css: '.stai-button {\n  color: white;\n}'
+            }
+          });
+        },
         set(value) { writes.push(value); return Promise.resolve(); }
       }
     },
@@ -81,4 +93,5 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   );
   assert.ok(writes.some((value) => value.isPicking === true));
   assert.equal(closeCount, 1);
+  assert.match(previewContent.textContent, /^<!-- Source reference: https:\/\/example\.com\/components\/button -->/);
 });

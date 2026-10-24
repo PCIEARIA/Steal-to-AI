@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Steal to AI",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Pick a web element and copy clean HTML/CSS for AI or direct project use.",
   "permissions": ["activeTab", "scripting", "clipboardWrite", "storage", "downloads"],
   "host_permissions": ["https://raw.githubusercontent.com/*"],

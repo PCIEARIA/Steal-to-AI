@@ -10,7 +10,7 @@
   ];
   const blocked = new Set(['SCRIPT', 'STYLE', 'LINK', 'IFRAME', 'OBJECT', 'EMBED', 'TEMPLATE', 'NOSCRIPT']);
   const staticProperties = new Set(['transition', 'animation']);
-  const contentTags = new Set(['A', 'AUDIO', 'BUTTON', 'CANVAS', 'IMG', 'INPUT', 'SELECT', 'SVG', 'TEXTAREA', 'VIDEO']);
+  const contentTags = new Set(['A', 'AUDIO', 'BUTTON', 'CANVAS', 'IMG', 'INPUT', 'SELECT', 'TEXTAREA', 'VIDEO']);
   let activeStop = null;
   let captureToast = null;
 
@@ -32,10 +32,17 @@
     } catch {}
   }
 
+  function hasVisibleSvgContent(svg) {
+    return Boolean(svg && svg.querySelector && svg.querySelector('path, rect, circle, ellipse, polygon, polyline, line, text, use, image'));
+  }
+
   function hasComponentContent(element) {
+    if (element.tagName === 'SVG') return hasVisibleSvgContent(element);
     if (contentTags.has(element.tagName)) return true;
     if ((element.textContent || '').trim()) return true;
-    return Boolean(element.querySelector && element.querySelector('a, audio, button, canvas, img, input, select, svg, textarea, video'));
+    if (!element.querySelector) return false;
+    if (element.querySelector('a, audio, button, canvas, img, input, select, textarea, video')) return true;
+    return hasVisibleSvgContent(element.querySelector('svg'));
   }
 
   function nearestComponentTarget(element) {
@@ -218,6 +225,7 @@
     const rect = element.getBoundingClientRect();
     const payload = {
       title: element.tagName.toLowerCase() + ' · ' + Math.round(rect.width) + ' × ' + Math.round(rect.height),
+      sourceUrl: location.href,
       html: clone.outerHTML,
       css: rules.join('\n\n')
     };

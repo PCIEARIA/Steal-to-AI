@@ -26,6 +26,7 @@ async function startPicker({sendMessage}) {
     CSSStyleRule: class {},
     getComputedStyle() { return {getPropertyValue() { return 'none'; }, animationName: 'none'}; },
     window: {setTimeout() {}},
+    location: {href: 'https://example.com/designs/launch'},
     requestAnimationFrame(callback) { callback(); },
     navigator: {clipboard: {async writeText() {}}}
   });
@@ -86,4 +87,37 @@ test('an empty decorative layer resolves to its nearest content-bearing parent c
 
   assert.equal(sent.length, 1);
   assert.equal(sent[0].payload.title, 'div · 300 × 100');
+  assert.equal(sent[0].payload.sourceUrl, 'https://example.com/designs/launch');
+});
+
+test('a wrapper containing an SVG defs-only filter resolves to its meaningful parent component', async () => {
+  const sent = [];
+  const {listeners, Element} = await startPicker({sendMessage(message) { sent.push(message); }});
+  function element(tagName, width, height, textContent = '') {
+    const value = new Element();
+    value.nodeType = 1;
+    value.tagName = tagName;
+    value.dataset = {};
+    value.attributes = [];
+    value.childNodes = [];
+    value.textContent = textContent;
+    value.closest = () => null;
+    value.getBoundingClientRect = () => ({top: 20, left: 30, width, height});
+    value.cloneNode = () => ({
+      attributes: [], removeAttribute() {}, setAttribute() {}, appendChild() {}, outerHTML: '<div></div>'
+    });
+    return value;
+  }
+
+  const component = element('DIV', 360, 180, 'Launch project');
+  const filterSvg = element('SVG', 210, 150);
+  filterSvg.querySelector = () => null;
+  const filterLayer = element('DIV', 210, 150);
+  filterLayer.querySelector = (selector) => selector.includes('svg') ? filterSvg : null;
+  filterLayer.parentElement = component;
+
+  listeners.get('click')({target: filterLayer, preventDefault() {}, stopImmediatePropagation() {}});
+
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].payload.title, 'div · 360 × 180');
 });

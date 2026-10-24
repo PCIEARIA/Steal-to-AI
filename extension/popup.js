@@ -63,6 +63,11 @@ const updateRepoUrl = 'https://github.com/PCIEARIA/Steal-to-AI';
 let preferences = {...defaults};
 let resultText = '';
 
+function formatCode(payload) {
+  const reference = payload.sourceUrl ? '<!-- Source reference: ' + payload.sourceUrl + ' -->\n\n' : '';
+  return reference + payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
+}
+
 function normalizePreferences(value = {}) {
   return {
     language: value.language === 'en' ? 'en' : 'zh',
@@ -124,7 +129,7 @@ async function persistPreferences() {
 
 function showResult(payload) {
   if (!payload) return;
-  resultText = payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
+  resultText = formatCode(payload);
   title.textContent = text('selected') + '：' + payload.title;
   resultDetail.textContent = payload.screenshotFileName
     ? text('copyPrompt') + ' ' + text('saved') + ' · ' + payload.screenshotFileName
