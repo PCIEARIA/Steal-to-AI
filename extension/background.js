@@ -14,13 +14,21 @@ function formatCode(payload) {
     '<!-- AI reconstruction instruction: ' + liquidGlassDecisionPrompt + ' -->'
   ];
   if (payload.sourceUrl) references.push('<!-- Source reference: ' + payload.sourceUrl + ' -->');
-  for (const interaction of Array.isArray(payload.interactions) ? payload.interactions : []) {
-    if (interaction && interaction.type === 'drag' && interaction.selector) {
-      references.push('<!-- Interaction reference (inferred): ' + interaction.selector + ' is draggable. Recreate it with pointerdown, pointermove, and pointerup; keep it within the component bounds. -->');
-    }
-  }
+  const components = Array.isArray(payload.components) && payload.components.length ? payload.components : [payload];
+  if (components.length > 1) references.push('<!-- Component bundle: ' + components.length + ' selected components. Keep their roles separate; do not rebuild the full source page. -->');
   const reference = references.length ? references.join('\n') + '\n\n' : '';
-  return reference + payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
+  const code = components.map((component, index) => {
+    const componentReferences = [];
+    for (const interaction of Array.isArray(component.interactions) ? component.interactions : []) {
+      if (interaction && interaction.type === 'drag' && interaction.selector) {
+        componentReferences.push('<!-- Interaction reference (inferred): ' + interaction.selector + ' is draggable. Recreate it with pointerdown, pointermove, and pointerup; keep it within the component bounds. -->');
+      }
+    }
+    const label = components.length > 1 ? '<!-- Component ' + (index + 1) + ': ' + (component.title || 'selected component') + ' -->\n' : '';
+    const interactions = componentReferences.length ? componentReferences.join('\n') + '\n' : '';
+    return label + interactions + (component.html || '') + '\n\n<style>\n' + (component.css || '') + '\n</style>';
+  }).join('\n\n');
+  return reference + code;
 }
 
 function dataUrlFromBlob(blob) {

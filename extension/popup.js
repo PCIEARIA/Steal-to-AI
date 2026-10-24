@@ -8,7 +8,7 @@ const strings = {
     stepThree: '重新開啟小窗，一鍵複製結果。',
     start: '開始使用', notNow: '稍後再說', capture: '開始選取',
     ready: '準備好了，挑一個你想帶走的元素。',
-    picking: '正在選取。點頁面上的元素，Esc 可取消。',
+    picking: '正在選取。點一下擷取單一元件；Shift+點選多個元件，按 Enter 匯出；Esc 可取消。',
     noTab: '找不到可用的頁面。', normalSite: '請先開啟一般網頁，再試一次。',
     captured: '已選取元素，可複製程式碼。', selected: '已選取', copyPrompt: '可複製程式碼，或把「元件提示詞」交給你的 AI。', codePreview: '程式碼預覽', codePreviewHint: '將會完整複製', copied: '已複製 Clean HTML/CSS。', copy: '複製程式碼', copiedShort: '已複製', copyComponentPrompt: '複製元件提示詞', componentPromptCopied: '已複製元件提示詞。貼到你的 AI 編程工具即可。', componentPromptCopiedShort: '提示詞已複製',
     dynamic: '動態效果', dynamicHint: '輸出規則',
@@ -29,7 +29,7 @@ const strings = {
     stepThree: 'Reopen this small panel and copy the result.',
     start: 'Start using', notNow: 'Not now', capture: 'Start picking',
     ready: 'Ready when you spot something worth keeping.',
-    picking: 'Picking is on. Click an element, or press Esc to cancel.',
+    picking: 'Picking is on. Click once for one component; Shift+click multiple components, then press Enter to export; Esc cancels.',
     noTab: 'No usable page is open.', normalSite: 'Open a normal website, then try again.',
     captured: 'Element selected and ready to copy.', selected: 'Selected', copyPrompt: 'Copy the code, or send a component prompt to your AI.', codePreview: 'Code preview', codePreviewHint: 'Full code will be copied', copied: 'Clean HTML/CSS copied.', copy: 'Copy code', copiedShort: 'Copied', copyComponentPrompt: 'Copy component prompt', componentPromptCopied: 'Component prompt copied. Paste it into your AI coding tool.', componentPromptCopiedShort: 'Prompt copied',
     dynamic: 'Dynamic effects', dynamicHint: 'export rules',
@@ -77,13 +77,21 @@ function formatCode(payload) {
     '<!-- AI reconstruction instruction: ' + liquidGlassDecisionPrompt + ' -->'
   ];
   if (payload.sourceUrl) references.push('<!-- Source reference: ' + payload.sourceUrl + ' -->');
-  for (const interaction of Array.isArray(payload.interactions) ? payload.interactions : []) {
-    if (interaction && interaction.type === 'drag' && interaction.selector) {
-      references.push('<!-- Interaction reference (inferred): ' + interaction.selector + ' is draggable. Recreate it with pointerdown, pointermove, and pointerup; keep it within the component bounds. -->');
-    }
-  }
+  const components = Array.isArray(payload.components) && payload.components.length ? payload.components : [payload];
+  if (components.length > 1) references.push('<!-- Component bundle: ' + components.length + ' selected components. Keep their roles separate; do not rebuild the full source page. -->');
   const reference = references.length ? references.join('\n') + '\n\n' : '';
-  return reference + payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
+  const code = components.map((component, index) => {
+    const componentReferences = [];
+    for (const interaction of Array.isArray(component.interactions) ? component.interactions : []) {
+      if (interaction && interaction.type === 'drag' && interaction.selector) {
+        componentReferences.push('<!-- Interaction reference (inferred): ' + interaction.selector + ' is draggable. Recreate it with pointerdown, pointermove, and pointerup; keep it within the component bounds. -->');
+      }
+    }
+    const label = components.length > 1 ? '<!-- Component ' + (index + 1) + ': ' + (component.title || 'selected component') + ' -->\n' : '';
+    const interactions = componentReferences.length ? componentReferences.join('\n') + '\n' : '';
+    return label + interactions + (component.html || '') + '\n\n<style>\n' + (component.css || '') + '\n</style>';
+  }).join('\n\n');
+  return reference + code;
 }
 
 function formatComponentPrompt(payload) {

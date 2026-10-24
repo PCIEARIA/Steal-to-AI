@@ -77,6 +77,39 @@ test('an extracted element notifies its source page that code is ready to copy',
   assert.match(message.code, /\.stai-button__lens is draggable/);
 });
 
+test('a component bundle keeps each captured component separate in the copied code', async () => {
+  const source = await readFile(new URL('../extension/background.js', import.meta.url), 'utf8');
+  const state = {};
+  const sent = [];
+  let onMessage;
+  const chrome = {
+    runtime: {onMessage: {addListener(listener) { onMessage = listener; }}},
+    storage: {local: {async get() { return {}; }, async set(next) { Object.assign(state, next); }}},
+    tabs: {async sendMessage(tabId, message) { sent.push([tabId, message]); }},
+    downloads: {async download() {}},
+    scripting: {async executeScript() {}}
+  };
+
+  vm.runInNewContext(source, {chrome, FileReader: class {}, OffscreenCanvas: class {}, fetch() {}});
+  onMessage({type: 'STAI_EXTRACTION', payload: {
+    title: '2 components',
+    sourceUrl: 'https://example.com/landing',
+    components: [
+      {title: 'nav · 800 × 64', html: '<nav>Navigation</nav>', css: '.stai-nav { color: navy; }', interactions: []},
+      {title: 'section · 800 × 480', html: '<section>Hero</section>', css: '.stai-section { color: purple; }', interactions: []}
+    ]
+  }}, {tab: {id: 42, windowId: 9}}, () => {});
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(state.lastExtraction.components.length, 2);
+  assert.equal(sent.length, 1);
+  assert.match(sent[0][1].code, /<!-- Component 1: nav · 800 × 64 -->/);
+  assert.ok(sent[0][1].code.includes('<nav>Navigation</nav>'));
+  assert.match(sent[0][1].code, /<!-- Component 2: section · 800 × 480 -->/);
+  assert.ok(sent[0][1].code.includes('<section>Hero</section>'));
+  assert.doesNotMatch(sent[0][1].code, /undefined/);
+});
+
 test('ultimate mode downloads a packaged offline page instead of returning bare HTML', async () => {
   const [backgroundSource, archiveSource] = await Promise.all([
     readFile(new URL('../extension/background.js', import.meta.url), 'utf8'),

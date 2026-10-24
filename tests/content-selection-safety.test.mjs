@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-async function startPicker({sendMessage, cursor = 'none', computedValues = {}, computedStyle, clipboardWrites = []}) {
+async function startPicker({sendMessage, cursor = 'none', computedValues = {}, computedStyle, clipboardWrites = [], preferences = {effectMode: 'smart'}}) {
   const source = await readFile(new URL('../extension/content.js', import.meta.url), 'utf8');
   const listeners = new Map();
   let onMessage;
@@ -48,12 +48,12 @@ async function startPicker({sendMessage, cursor = 'none', computedValues = {}, c
         animationName: 'none'
       };
     },
-    window: {setTimeout() {}},
+    window: {setTimeout() {}, devicePixelRatio: 2},
     location: {href: 'https://example.com/designs/launch'},
     requestAnimationFrame(callback) { callback(); },
     navigator: {clipboard: {async writeText(value) { clipboardWrites.push(value); }}}
   });
-  onMessage({type: 'STAI_START_PICKING', preferences: {effectMode: 'smart'}}, {}, () => {});
+  onMessage({type: 'STAI_START_PICKING', preferences}, {}, () => {});
   return {
     listeners, document, Element,
     dispatch(message) {
@@ -286,6 +286,106 @@ test('an absolute button remains selectable instead of being promoted to its car
   listeners.get('click')({target: button, preventDefault() {}, stopImmediatePropagation() {}});
 
   assert.equal(sent[0].payload.title, 'button · 764 × 458');
+});
+
+test('shift-clicked components are exported together only after Enter confirms the bundle', async () => {
+  const sent = [];
+  const {listeners, Element} = await startPicker({sendMessage(message) { sent.push(message); }});
+  function component(label, width) {
+    const value = new Element();
+    value.nodeType = 1;
+    value.tagName = 'DIV';
+    value.dataset = {};
+    value.attributes = [];
+    value.childNodes = [];
+    value.children = [];
+    value.textContent = label;
+    value.closest = () => null;
+    value.getBoundingClientRect = () => ({top: 20, left: 30, width, height: 80});
+    value.cloneNode = () => ({
+      attributes: [], removeAttribute() {}, setAttribute() {}, appendChild() {}, outerHTML: '<div></div>'
+    });
+    return value;
+  }
+  const navbar = component('Navigation', 480);
+  const hero = component('Build faster', 720);
+
+  listeners.get('click')({target: navbar, shiftKey: true, preventDefault() {}, stopImmediatePropagation() {}});
+  listeners.get('click')({target: hero, shiftKey: true, preventDefault() {}, stopImmediatePropagation() {}});
+
+  assert.deepEqual(sent, []);
+
+  listeners.get('keydown')({key: 'Enter', preventDefault() {}});
+
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].type, 'STAI_EXTRACTION');
+  assert.equal(sent[0].payload.title, '2 components');
+  assert.equal(sent[0].payload.components.length, 2);
+  assert.equal(JSON.stringify(sent[0].payload.components.map((component) => component.title)), JSON.stringify(['div · 480 × 80', 'div · 720 × 80']));
+});
+
+test('batch selection keeps a selected parent instead of duplicating its child component', async () => {
+  const sent = [];
+  const {listeners, Element} = await startPicker({sendMessage(message) { sent.push(message); }});
+  function component(label, width) {
+    const value = new Element();
+    value.nodeType = 1;
+    value.tagName = 'DIV';
+    value.dataset = {};
+    value.attributes = [];
+    value.childNodes = [];
+    value.children = [];
+    value.textContent = label;
+    value.closest = () => null;
+    value.getBoundingClientRect = () => ({top: 20, left: 30, width, height: 80});
+    value.cloneNode = () => ({
+      attributes: [], removeAttribute() {}, setAttribute() {}, appendChild() {}, outerHTML: '<div></div>'
+    });
+    return value;
+  }
+  const card = component('Pricing card', 420);
+  const button = component('Choose plan', 140);
+  button.parentElement = card;
+
+  listeners.get('click')({target: card, shiftKey: true, preventDefault() {}, stopImmediatePropagation() {}});
+  listeners.get('click')({target: button, shiftKey: true, preventDefault() {}, stopImmediatePropagation() {}});
+  listeners.get('keydown')({key: 'Enter', preventDefault() {}});
+
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].payload.components.length, 1);
+  assert.equal(sent[0].payload.components[0].title, 'div · 420 × 80');
+});
+
+test('a batch screenshot capture spans every selected component', async () => {
+  const sent = [];
+  const {listeners, Element} = await startPicker({
+    sendMessage(message) { sent.push(message); },
+    preferences: {effectMode: 'smart', screenshotMode: 'download'}
+  });
+  function component(label, top, left, width, height) {
+    const value = new Element();
+    value.nodeType = 1;
+    value.tagName = 'DIV';
+    value.dataset = {};
+    value.attributes = [];
+    value.childNodes = [];
+    value.children = [];
+    value.textContent = label;
+    value.closest = () => null;
+    value.getBoundingClientRect = () => ({top, left, width, height});
+    value.cloneNode = () => ({
+      attributes: [], removeAttribute() {}, setAttribute() {}, appendChild() {}, outerHTML: '<div></div>'
+    });
+    return value;
+  }
+  const navigation = component('Navigation', 20, 30, 200, 80);
+  const card = component('Pricing', 140, 500, 100, 100);
+
+  listeners.get('click')({target: navigation, shiftKey: true, preventDefault() {}, stopImmediatePropagation() {}});
+  listeners.get('click')({target: card, shiftKey: true, preventDefault() {}, stopImmediatePropagation() {}});
+  listeners.get('keydown')({key: 'Enter', preventDefault() {}});
+
+  assert.equal(JSON.stringify(sent[0].payload.capture), JSON.stringify({x: 30, y: 20, width: 570, height: 220, scale: 2}));
 });
 
 test('ultimate mode asks the background worker to download a rendered full-page package', async () => {

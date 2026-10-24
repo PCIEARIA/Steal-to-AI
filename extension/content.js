@@ -323,6 +323,41 @@
     return draggable ? [{type: 'drag', selector: '.' + draggable.className}] : [];
   }
 
+  function extractComponents(elements, preferences) {
+    return elements.map((element) => extract(element, preferences));
+  }
+
+  function isAncestor(ancestor, node) {
+    let current = node && node.parentElement;
+    while (current) {
+      if (current === ancestor) return true;
+      current = current.parentElement;
+    }
+    return false;
+  }
+
+  function addBatchTarget(target, selected) {
+    const existing = selected.indexOf(target);
+    if (existing >= 0) {
+      selected.splice(existing, 1);
+      return;
+    }
+    for (let index = selected.length - 1; index >= 0; index -= 1) {
+      if (isAncestor(selected[index], target)) return;
+      if (isAncestor(target, selected[index])) selected.splice(index, 1);
+    }
+    selected.push(target);
+  }
+
+  function captureFor(elements) {
+    const rects = elements.map((element) => element.getBoundingClientRect());
+    const left = Math.min(...rects.map((rect) => rect.left));
+    const top = Math.min(...rects.map((rect) => rect.top));
+    const right = Math.max(...rects.map((rect) => rect.left + rect.width));
+    const bottom = Math.max(...rects.map((rect) => rect.top + rect.height));
+    return {x: left, y: top, width: right - left, height: bottom - top, scale: window.devicePixelRatio};
+  }
+
   function extract(element, preferences) {
     const rootClass = 'stai-' + element.tagName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     const records = [];
@@ -349,7 +384,7 @@
       interactions: interactionHints(records, preferences.effectMode)
     };
     if (preferences.screenshotMode === 'download') {
-      payload.capture = {x: rect.left, y: rect.top, width: rect.width, height: rect.height, scale: window.devicePixelRatio};
+      payload.capture = captureFor([element]);
     }
     return payload;
   }
@@ -358,12 +393,15 @@
     if (activeStop) activeStop();
     const preferences = normalizedPreferences(inputPreferences);
     let selected = null;
+    const batch = [];
     const outline = document.createElement('div');
+    const batchLayer = document.createElement('div');
     const tooltip = document.createElement('div');
-    outline.dataset.staiOverlay = 'true'; tooltip.dataset.staiOverlay = 'true';
+    outline.dataset.staiOverlay = 'true'; batchLayer.dataset.staiOverlay = 'true'; tooltip.dataset.staiOverlay = 'true';
     Object.assign(outline.style, {position: 'fixed', pointerEvents: 'none', zIndex: '2147483647', border: '2px solid #d7ff64', background: 'rgba(215,255,100,.11)', borderRadius: '4px', display: 'none', boxSizing: 'border-box'});
+    Object.assign(batchLayer.style, {position: 'fixed', pointerEvents: 'none', inset: '0', zIndex: '2147483646'});
     Object.assign(tooltip.style, {position: 'fixed', pointerEvents: 'none', zIndex: '2147483647', display: 'none', padding: '6px 8px', borderRadius: '4px', background: '#12151d', color: '#d7ff64', font: '700 11px/1.2 ui-monospace, monospace'});
-    document.documentElement.append(outline, tooltip);
+    document.documentElement.append(batchLayer, outline, tooltip);
     function targetOf(event) {
       const target = event.target;
       if (!(target instanceof Element) || target.dataset.staiOverlay || target.closest('[data-stai-overlay]')) return null;
@@ -375,24 +413,62 @@
       document.removeEventListener('pointermove', move, true);
       document.removeEventListener('click', choose, true);
       document.removeEventListener('keydown', keydown, true);
-      outline.remove(); tooltip.remove(); activeStop = null;
+      outline.remove(); batchLayer.remove(); tooltip.remove(); activeStop = null;
+    }
+    function renderBatch() {
+      batchLayer.innerHTML = '';
+      for (const target of batch) {
+        const box = target.getBoundingClientRect();
+        const mark = document.createElement('div');
+        Object.assign(mark.style, {
+          position: 'fixed', top: box.top + 'px', left: box.left + 'px', width: box.width + 'px', height: box.height + 'px',
+          boxSizing: 'border-box', border: '2px solid #72a8ff', borderRadius: '4px', background: 'rgba(114,168,255,.10)'
+        });
+        batchLayer.append(mark);
+      }
+    }
+    function pickerHint() {
+      if (batch.length) return preferences.language === 'en'
+        ? ' · ' + batch.length + ' selected · Enter to capture bundle'
+        : ' · 已選 ' + batch.length + ' 個 · 按 Enter 匯出組合';
+      return preferences.language === 'en' ? ' · Shift+click adds to bundle' : ' · Shift+點選可加入組合';
     }
     function move(event) {
       const target = targetOf(event); if (!target) return;
       selected = target;
       const box = target.getBoundingClientRect();
       Object.assign(outline.style, {display: 'block', top: box.top + 'px', left: box.left + 'px', width: box.width + 'px', height: box.height + 'px'});
-      tooltip.textContent = target.tagName.toLowerCase() + ' · ' + Math.round(box.width) + ' × ' + Math.round(box.height);
+      tooltip.textContent = target.tagName.toLowerCase() + ' · ' + Math.round(box.width) + ' × ' + Math.round(box.height) + pickerHint();
       Object.assign(tooltip.style, {display: 'block', top: Math.max(8, box.top - 29) + 'px', left: Math.max(8, box.left) + 'px'});
     }
     function choose(event) {
       const target = targetOf(event) || selected; if (!target) return;
       event.preventDefault(); event.stopImmediatePropagation();
+      if (event.shiftKey) {
+        addBatchTarget(target, batch);
+        selected = target;
+        renderBatch();
+        return;
+      }
+      if (batch.length) return;
       const payload = extract(target, preferences);
       stop();
       sendRuntimeMessage({type: 'STAI_EXTRACTION', payload, language: preferences.language});
     }
     function keydown(event) {
+      if (event.key === 'Enter' && batch.length) {
+        event.preventDefault();
+        const components = extractComponents(batch, preferences);
+        const payload = {
+          title: components.length + ' components',
+          sourceUrl: location.href,
+          components
+        };
+        if (preferences.screenshotMode === 'download') payload.capture = captureFor(batch);
+        stop();
+        sendRuntimeMessage({type: 'STAI_EXTRACTION', payload, language: preferences.language});
+        return;
+      }
       if (event.key !== 'Escape') return;
       event.preventDefault(); stop(); sendRuntimeMessage({type: 'STAI_CANCELLED'});
     }
