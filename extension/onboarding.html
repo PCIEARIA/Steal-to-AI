@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Steal to AI</title>
+    <link rel="stylesheet" href="onboarding.css">
+  </head>
+  <body>
+    <main class="welcome-shell">
+      <header class="topline">
+        <div class="wordmark">steal <i>to</i> ai</div>
+      </header>
+      <section class="language-gate" id="language-gate">
+        <p class="eyebrow">steal to ai</p>
+        <h1>先選擇你的語言<br><span>Choose your language first.</span></h1>
+        <p class="gate-hint">這會套用到歡迎頁和之後的小窗設定。<br><span>This applies to the welcome page and compact panel settings.</span></p>
+        <div class="language-options" aria-label="Choose language">
+          <button class="language-option" type="button" data-language="zh"><b>中</b><span>繁體中文</span><i>Traditional Chinese</i></button>
+          <button class="language-option" type="button" data-language="en"><b>A</b><span>English</span><i>English</i></button>
+        </div>
+      </section>
+      <section class="welcome-content" id="welcome-content" hidden>
+        <div class="welcome-copy">
+          <p class="eyebrow" data-copy="kicker"></p>
+          <h1 data-copy="title"></h1>
+          <p class="lede" data-copy="body"></p>
+          <ol class="steps">
+            <li><b>01</b><span data-copy="stepOne"></span></li>
+            <li><b>02</b><span data-copy="stepTwo"></span></li>
+            <li><b>03</b><span data-copy="stepThree"></span></li>
+          </ol>
+          <div class="actions">
+            <button class="primary-action" id="start" type="button" data-copy="start"></button>
+          </div>
+          <p class="start-status" id="start-status" role="status" hidden></p>
+          <div class="github-support">
+            <p data-copy="githubNote"></p>
+            <a class="github-star" href="https://github.com/PCIEARIA/Steal-to-AI" target="_blank" rel="noreferrer"><span aria-hidden="true">★</span> <span data-copy="githubStar"></span> <b aria-hidden="true">↗</b></a>
+            <a class="github-link" href="https://github.com/PCIEARIA/Steal-to-AI" target="_blank" rel="noreferrer">github.com/PCIEARIA/Steal-to-AI</a>
+          </div>
+        </div>
+      </section>
+      <footer data-copy="footer"></footer>
+    </main>
+    <script src="onboarding.js"></script>
+  </body>
+</html>

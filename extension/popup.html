@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steal to AI</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <section class="panel onboarding" id="onboarding" hidden>
+        <div class="masthead">
+          <div class="wordmark">steal <i>to</i> ai</div>
+          <div class="language-switch" aria-label="Language">
+            <button type="button" data-language="zh">中</button>
+            <button type="button" data-language="en">EN</button>
+          </div>
+        </div>
+        <p class="eyebrow" data-copy="onboardingKicker"></p>
+        <h1 data-copy="onboardingTitle"></h1>
+        <p class="lede" data-copy="onboardingBody"></p>
+        <ol class="steps">
+          <li><b>01</b><span data-copy="stepOne"></span></li>
+          <li><b>02</b><span data-copy="stepTwo"></span></li>
+          <li><b>03</b><span data-copy="stepThree"></span></li>
+        </ol>
+        <button class="primary-action" id="start-onboarding" type="button" data-copy="start"></button>
+        <button class="quiet-action" id="dismiss-onboarding" type="button" data-copy="notNow"></button>
+      </section>
+
+      <section class="panel workspace" id="workspace" hidden>
+        <div class="masthead">
+          <div><div class="wordmark">steal <i>to</i> ai</div><p class="submark">Clean HTML/CSS</p></div>
+          <button class="language-tiny" type="button" data-language-toggle aria-label="Switch language">EN</button>
+        </div>
+        <button class="primary-action capture-action" id="start" type="button"><span class="target" aria-hidden="true"></span><span data-copy="capture"></span></button>
+        <p class="status" id="status" role="status"></p>
+
+        <section class="settings-section">
+          <div class="section-heading"><span data-copy="dynamic"></span><small data-copy="dynamicHint"></small></div>
+          <div class="choice-list" role="radiogroup" aria-label="Dynamic effects">
+            <label class="choice"><input type="radio" name="effectMode" value="smart"><span class="radio"></span><span><strong data-copy="smart"></strong><small data-copy="smartDesc"></small></span></label>
+            <label class="choice"><input type="radio" name="effectMode" value="all"><span class="radio"></span><span><strong data-copy="all"></strong><small data-copy="allDesc"></small></span></label>
+            <label class="choice"><input type="radio" name="effectMode" value="static"><span class="radio"></span><span><strong data-copy="static"></strong><small data-copy="staticDesc"></small></span></label>
+          </div>
+        </section>
+
+        <section class="settings-section screenshot-section">
+          <div class="section-heading"><span data-copy="screenshot"></span></div>
+          <label class="toggle-row"><span><strong data-copy="saveScreenshot"></strong><small data-copy="screenshotDesc"></small></span><input id="screenshot" type="checkbox"><span class="toggle" aria-hidden="true"></span></label>
+        </section>
+
+        <div class="capture-result" id="capture-result" hidden>
+          <div class="result-dot" aria-hidden="true"></div>
+          <div><strong id="title"></strong><small id="result-detail"></small></div>
+          <button id="copy" type="button" disabled data-copy="copy"></button>
+        </div>
+        <p class="footer-note" data-copy="footer"></p>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

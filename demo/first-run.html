@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steal to AI · First Run Preview</title>
+    <link rel="stylesheet" href="../extension/onboarding.css">
+  </head>
+  <body>
+    <main class="welcome-shell">
+      <header class="topline">
+        <div class="wordmark">steal <i>to</i> ai</div>
+      </header>
+      <section class="language-gate">
+        <p class="eyebrow">steal to ai</p>
+        <h1>先選擇你的語言<br><span>Choose your language first.</span></h1>
+        <p class="gate-hint">這會套用到歡迎頁和之後的小窗設定。<br><span>This applies to the welcome page and compact panel settings.</span></p>
+        <div class="language-options">
+          <button class="language-option" type="button" data-language="zh"><b>中</b><span>繁體中文</span><i>Traditional Chinese</i></button>
+          <button class="language-option" type="button" data-language="en"><b>A</b><span>English</span><i>English</i></button>
+        </div>
+      </section>
+      <section class="welcome-content" hidden>
+        <div class="welcome-copy">
+          <p class="eyebrow" data-copy="kicker">將網頁細節帶去給 AI</p>
+          <h1 data-copy="title">看見好設計，直接帶走它的語言。</h1>
+          <p class="lede" data-copy="body">選一個元件，Steal to AI 會整理成可貼到 AI 或專案的乾淨 HTML/CSS。</p>
+          <ol class="steps">
+            <li><b>01</b><span data-copy="stepOne">開始選取你想要的東西。</span></li>
+            <li><b>02</b><span data-copy="stepTwo">點選按鈕、卡片、文字或完整區塊。</span></li>
+            <li><b>03</b><span data-copy="stepThree">偷給你的 AI。</span></li>
+          </ol>
+          <div class="actions"><button class="primary-action" id="start" type="button" data-copy="start">開始使用</button></div>
+          <div class="github-support">
+            <p data-copy="githubNote">這個專案保持開源；你的支持能讓它繼續變好。</p>
+            <a class="github-star" href="https://github.com/PCIEARIA/Steal-to-AI" target="_blank" rel="noreferrer"><span aria-hidden="true">★</span> <span data-copy="githubStar">喜歡這個工具？給我一顆 Star</span> <b aria-hidden="true">↗</b></a>
+            <a class="github-link" href="https://github.com/PCIEARIA/Steal-to-AI" target="_blank" rel="noreferrer">github.com/PCIEARIA/Steal-to-AI</a>
+          </div>
+        </div>
+      </section>
+      <footer data-copy="footer">Clean HTML/CSS · your browser, your reference</footer>
+    </main>
+    <script>
+      const copy = {
+        zh: { kicker: '將網頁細節帶去給 AI', title: '看見好設計，直接帶走它的語言。', body: '選一個元件，Steal to AI 會整理成可貼到 AI 或專案的乾淨 HTML/CSS。', stepOne: '開始選取你想要的東西。', stepTwo: '點選按鈕、卡片、文字或完整區塊。', stepThree: '偷給你的 AI。', start: '開始使用', opening: '正在開啟選取模式…', githubNote: '這個專案保持開源；你的支持能讓它繼續變好。', githubStar: '喜歡這個工具？給我一顆 Star', footer: 'Clean HTML/CSS · your browser, your reference' },
+        en: { kicker: 'Bring web details to AI', title: 'See good design. Bring its language with you.', body: 'Pick a component and Steal to AI turns it into clean HTML/CSS for your AI or project.', stepOne: 'Start picking what you want to recreate.', stepTwo: 'Select a button, card, line of text, or a complete block.', stepThree: 'Steal it for your AI.', start: 'Start using', opening: 'Opening picker…', githubNote: 'This project stays open source. Your support keeps it improving.', githubStar: 'Enjoying it? Give it a star', footer: 'Clean HTML/CSS · your browser, your reference' }
+      };
+      const gate = document.querySelector('.language-gate');
+      const welcome = document.querySelector('.welcome-content');
+      const start = document.querySelector('#start');
+      let language = 'zh';
+      function render(language) {
+        document.documentElement.lang = language === 'zh' ? 'zh-Hant' : 'en';
+        document.querySelectorAll('[data-copy]').forEach((element) => {
+          element.textContent = copy[language][element.dataset.copy];
+        });
+      }
+      document.querySelectorAll('.language-option').forEach((button) => button.addEventListener('click', () => {
+        language = button.dataset.language;
+        render(language);
+        gate.classList.add('is-leaving');
+        window.setTimeout(() => { gate.hidden = true; welcome.hidden = false; welcome.classList.add('is-visible'); }, 260);
+      }));
+      start.addEventListener('click', () => {
+        start.disabled = true;
+        start.textContent = copy[language].opening;
+        window.location.assign('index.html?startPicking=1');
+      });
+    </script>
+  </body>
+</html>
