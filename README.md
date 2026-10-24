@@ -16,22 +16,47 @@ Steal to AI is a Chrome Manifest V3 extension that turns a visible webpage eleme
 
 ## Install in Chrome
 
-1. Download or clone this repository.
+No build step, package manager, or Chrome Web Store upload is required. The installable extension is already in [`extension/`](extension/).
+
+1. Download or clone this repository:
+
+   ```bash
+   git clone https://github.com/PCIEARIA/Steal-to-AI.git
+   ```
+
 2. Open `chrome://extensions` in Google Chrome.
 3. Turn on **Developer mode**.
 4. Select **Load unpacked**.
-5. Choose the repository's `extension` folder.
+5. Choose `Steal-to-AI/extension` — **not** the repository root.
 6. Pin **Steal to AI** from Chrome's Extensions menu.
 
-After source changes, open `chrome://extensions` and press Reload on the extension.
+You should now see **Steal to AI**, version `0.1.0`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
+
+## Quick install for AI coding agents
+
+This repository is intentionally loadable without a build tool. If you are an AI agent helping someone install the project locally, use this checklist:
+
+1. Clone or download the repository to a local folder the user can access.
+2. Tell the user to open `chrome://extensions`, enable **Developer mode**, and click **Load unpacked**.
+3. Select the exact local folder `<repository>/extension`.
+4. Confirm that the extension card says **Steal to AI** and is enabled.
+5. Open any normal `http` or `https` page and test the **開始選取** / **Start picking** button.
+
+Chrome requires the person using the browser to approve loading an unpacked extension. Agents should never ask users to install arbitrary files or select a folder other than this repository's `extension/` directory.
+
+### Copy-paste prompt for an AI agent
+
+```text
+Install the local Steal to AI Chrome extension for me. Do not build it and do not choose the repository root. In Chrome, open chrome://extensions, enable Developer mode, use Load unpacked, and select the project's extension folder. Then confirm that Steal to AI is enabled. After any source update, reload the extension and refresh the test webpage.
+```
 
 ## Use it
 
 1. Open a normal `http` or `https` webpage.
 2. Open Steal to AI and choose your language on first launch.
-3. Press **開始使用** / **Start using**. The onboarding tab closes and selection mode starts on your original tab.
-4. Hover to preview an element, then click to capture it. Press `Esc` to cancel.
-5. Reopen Steal to AI and press **複製** / **Copy** to put the HTML/CSS on your clipboard.
+3. Press **開始選取** / **Start picking**. The small panel closes before selection mode starts, so your next click is the element you want.
+4. Hover to preview an element, then click once to capture it. Press `Esc` to cancel.
+5. Use **複製程式碼** / **Copy code** in the on-page confirmation to put the HTML/CSS directly on your clipboard. Reopen Steal to AI whenever you want to preview the generated code or change export settings.
 
 ## Export modes
 
