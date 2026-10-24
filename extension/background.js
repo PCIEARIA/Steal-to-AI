@@ -1,3 +1,5 @@
+if (typeof importScripts === 'function') importScripts('page-archive.js');
+
 function safePart(value) {
   return String(value || 'element').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) || 'element';
 }
@@ -42,6 +44,27 @@ async function downloadSelectionCapture(windowId, capture, title) {
   const filename = 'steal-to-ai-' + safePart(title) + '-' + Date.now() + '.png';
   await chrome.downloads.download({url: png, filename, saveAs: false, conflictAction: 'uniquify'});
   return filename;
+}
+
+async function downloadFullPageSnapshot(payload) {
+  const archive = globalThis.StaiPageArchive;
+  if (!archive || typeof archive.buildOfflineSnapshot !== 'function') throw new Error('Page archive helper is unavailable.');
+  const sourceUrl = payload && payload.sourceUrl;
+  const result = await archive.buildOfflineSnapshot({
+    html: payload && payload.html,
+    sourceUrl
+  });
+  const hostname = (() => {
+    try { return new URL(sourceUrl).hostname; } catch { return 'page'; }
+  })();
+  const objectUrl = URL.createObjectURL(new Blob([result.html], {type: 'text/html;charset=utf-8'}));
+  const filename = 'steal-to-ai-' + safePart(hostname) + '-' + Date.now() + '.html';
+  try {
+    await chrome.downloads.download({url: objectUrl, filename, saveAs: false, conflictAction: 'uniquify'});
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  }
+  return {filename, omitted: result.omitted || []};
 }
 
 async function openOnboarding() {
@@ -99,6 +122,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message && message.type === 'STAI_DISMISS_ONBOARDING') {
     returnFromOnboarding(sender, null, false).then((ok) => sendResponse({ok})).catch(() => sendResponse({ok: false}));
+    return true;
+  }
+
+  if (message && message.type === 'STAI_DOWNLOAD_PAGE_SNAPSHOT') {
+    downloadFullPageSnapshot(message.payload)
+      .then((result) => sendResponse({ok: true, ...result}))
+      .catch((error) => sendResponse({ok: false, error: String(error && error.message || error)}));
     return true;
   }
 

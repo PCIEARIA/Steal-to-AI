@@ -103,6 +103,6 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   await copyPageSource.handlers.click();
   assert.equal(
     JSON.stringify(sent.at(-1)),
-    JSON.stringify([42, {type: 'STAI_COPY_PAGE_SOURCE', language: 'en'}])
+    JSON.stringify([42, {type: 'STAI_DOWNLOAD_PAGE_SNAPSHOT', language: 'en'}])
   );
 });

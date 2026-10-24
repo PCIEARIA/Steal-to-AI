@@ -3,21 +3,37 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-async function startPicker({sendMessage, cursor = 'none', computedValues = {}, computedStyle, pageSource = '<html></html>', clipboardWrites = []}) {
+async function startPicker({sendMessage, cursor = 'none', computedValues = {}, computedStyle, clipboardWrites = []}) {
   const source = await readFile(new URL('../extension/content.js', import.meta.url), 'utf8');
   const listeners = new Map();
   let onMessage;
   class Element {}
-  const documentElement = {append() {}, outerHTML: '<html><body>Rendered fallback</body></html>'};
+  const documentElement = {
+    append() {},
+    outerHTML: '<html><body>Rendered fallback</body></html>',
+    cloneNode() { return {outerHTML: '<html><body>Rendered snapshot</body></html>', querySelectorAll() { return []; }}; }
+  };
   const document = {
-    documentElement,
+    documentElement, doctype: {name: 'html'},
     body: {},
     styleSheets: [],
     createElement() { return {dataset: {}, style: {}, setAttribute() {}, addEventListener() {}, append() {}, remove() {}}; },
+    querySelectorAll() { return []; },
     addEventListener(type, handler) { listeners.set(type, handler); },
     removeEventListener() {}
   };
-  const chrome = {runtime: {sendMessage, onMessage: {addListener(listener) { onMessage = listener; }}}};
+  const chrome = {runtime: {
+    sendMessage(message, callback) {
+      sendMessage(message);
+      if (message && message.type === 'STAI_DOWNLOAD_PAGE_SNAPSHOT') {
+        const response = {ok: true, filename: 'steal-to-ai-example.html', omitted: []};
+        if (callback) callback(response);
+        return Promise.resolve(response);
+      }
+      return undefined;
+    },
+    onMessage: {addListener(listener) { onMessage = listener; }}
+  }};
   vm.runInNewContext(source, {
     chrome,
     document,
@@ -35,7 +51,6 @@ async function startPicker({sendMessage, cursor = 'none', computedValues = {}, c
     window: {setTimeout() {}},
     location: {href: 'https://example.com/designs/launch'},
     requestAnimationFrame(callback) { callback(); },
-    fetch: async () => ({ok: true, async text() { return pageSource; }}),
     navigator: {clipboard: {async writeText(value) { clipboardWrites.push(value); }}}
   });
   onMessage({type: 'STAI_START_PICKING', preferences: {effectMode: 'smart'}}, {}, () => {});
@@ -232,13 +247,14 @@ test('a full-card absolute base layer resolves to its composite card instead of 
   assert.equal(sent[0].payload.title, 'div · 766 × 460');
 });
 
-test('ultimate mode copies the fetched full-page HTML to the clipboard', async () => {
-  const clipboardWrites = [];
-  const source = '<!doctype html><html><head><script src="app.js"></script></head><body>Liquid glass</body></html>';
-  const {dispatch} = await startPicker({sendMessage() {}, pageSource: source, clipboardWrites});
+test('ultimate mode asks the background worker to download a rendered full-page package', async () => {
+  const messages = [];
+  const {dispatch} = await startPicker({sendMessage(message) { messages.push(message); }});
 
-  const result = await dispatch({type: 'STAI_COPY_PAGE_SOURCE', language: 'en'});
+  const result = await dispatch({type: 'STAI_DOWNLOAD_PAGE_SNAPSHOT', language: 'en'});
 
   assert.equal(result.ok, true);
-  assert.deepEqual(clipboardWrites, [source]);
+  assert.equal(messages.at(-1).type, 'STAI_DOWNLOAD_PAGE_SNAPSHOT');
+  assert.equal(messages.at(-1).payload.sourceUrl, 'https://example.com/designs/launch');
+  assert.match(messages.at(-1).payload.html, /Rendered snapshot/);
 });

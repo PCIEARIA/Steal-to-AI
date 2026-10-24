@@ -61,7 +61,7 @@ Install the local Steal to AI Chrome extension for me. Do not build it and do no
 3. Press **開始選取** / **Start picking**. The small panel closes before selection mode starts, so your next click is the element you want.
 4. Hover to preview an element, then click once to capture it. Press `Esc` to cancel.
 5. Use **複製程式碼** / **Copy code** in the on-page confirmation to put the HTML/CSS directly on your clipboard. Reopen Steal to AI whenever you want to preview the generated code or change export settings.
-6. For an AI that needs the complete page context, use **究極模式 → 複製完整頁面原始碼** / **Ultimate mode → Copy full page source**. This copies the page's HTML source to your clipboard; linked CSS, JavaScript, and images remain linked by their original URLs.
+6. For an AI that needs the complete page context, use **究極模式 → 下載完整網站包** / **Ultimate mode → Download full page package**. It downloads one offline HTML snapshot with the rendered DOM, accessible CSS, images, CSS background assets, and external JavaScript source preserved as inert reference text. Resources that cannot be fetched safely stay linked and are noted in the download notification.
 
 Every component-code export starts with an AI instruction. Your AI must first ask whether the selected asset needs **liquid glass**. If you confirm it does, [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl) is only a technical reference: the AI should adapt the smallest needed WebGL techniques into your existing project, not copy the repository or replace your project's stack. Otherwise it should reconstruct only from the captured HTML/CSS that follows.
 

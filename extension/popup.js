@@ -16,7 +16,7 @@ const strings = {
     all: '全部帶上', allDesc: '盡量保留所有可取得的互動規則',
     static: '純靜態', staticDesc: '不帶動畫、狀態或過場',
     screenshot: '視覺參考截圖', saveScreenshot: '儲存選取區域截圖', screenshotDesc: '裁成 PNG，直接下載到 Downloads',
-    ultimate: '究極模式', ultimateHint: '整頁 HTML', copyPageSource: '複製完整頁面原始碼', sourcePreparing: '正在讀取完整頁面的原始碼…', sourceCopied: '完整頁面原始碼已複製，可直接貼到 AI。', sourceCopyFailed: '無法複製完整頁面原始碼。',
+    ultimate: '究極模式', ultimateHint: '完整離線快照（HTML + CSS + 素材）', copyPageSource: '下載完整網站包', sourcePreparing: '正在封裝完整網站…', sourceCopied: '完整網站包已下載，可交給 AI 或離線開啟。', sourceCopyFailed: '無法封裝完整網站。',
     saved: 'PNG 已下載', footer: '來源腳本、事件與追蹤屬性不會被帶走。',
     updateAvailable: '發現 v{version} 新版本。', getUpdate: '前往更新'
   },
@@ -37,7 +37,7 @@ const strings = {
     all: 'Include all', allDesc: 'Keeps every accessible interaction rule',
     static: 'Static only', staticDesc: 'No motion, states, or transitions',
     screenshot: 'Visual reference', saveScreenshot: 'Save selected-area screenshot', screenshotDesc: 'Crop as PNG and download to Downloads',
-    ultimate: 'Ultimate mode', ultimateHint: 'full-page HTML', copyPageSource: 'Copy full page source', sourcePreparing: 'Reading the full-page source…', sourceCopied: 'Full-page source copied. Paste it into your AI.', sourceCopyFailed: 'Could not copy the full-page source.',
+    ultimate: 'Ultimate mode', ultimateHint: 'offline snapshot (HTML + CSS + assets)', copyPageSource: 'Download full page package', sourcePreparing: 'Packaging the complete page…', sourceCopied: 'Full page package downloaded. Open it offline or give it to AI.', sourceCopyFailed: 'Could not package the complete page.',
     saved: 'PNG downloaded', footer: 'Source scripts, events, and tracking attributes stay behind.',
     updateAvailable: 'Update v{version} is available.', getUpdate: 'Get update'
   }
@@ -176,7 +176,7 @@ async function copySource() {
 
   copyPageSource.disabled = true;
   status.textContent = text('sourcePreparing');
-  chrome.tabs.sendMessage(tab.id, {type: 'STAI_COPY_PAGE_SOURCE', language: preferences.language}, (response) => {
+  chrome.tabs.sendMessage(tab.id, {type: 'STAI_DOWNLOAD_PAGE_SNAPSHOT', language: preferences.language}, (response) => {
     copyPageSource.disabled = false;
     if (chrome.runtime.lastError) { status.textContent = text('normalSite'); return; }
     status.textContent = response && response.ok ? text('sourceCopied') : text('sourceCopyFailed');

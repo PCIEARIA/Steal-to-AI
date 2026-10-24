@@ -131,15 +131,16 @@
     }, 8000);
   }
 
-  function showSourceCopied(language) {
+  function showSourceDownloaded(language, filename, omitted) {
     if (captureToast) captureToast.remove();
     const toast = document.createElement('div');
     toast.dataset.staiOverlay = 'true';
     toast.setAttribute('role', 'status');
     toast.setAttribute('aria-live', 'polite');
+    const skipped = Array.isArray(omitted) && omitted.length;
     toast.textContent = language === 'en'
-      ? 'Full page source copied. Paste it into your AI.'
-      : '完整頁面原始碼已複製，可直接貼到 AI。';
+      ? 'Full page package downloaded: ' + filename + (skipped ? ' (' + omitted.length + ' resources kept as URLs).' : '.')
+      : '完整網站包已下載：' + filename + (skipped ? '（有 ' + omitted.length + ' 個資源保留原網址）。' : '。');
     Object.assign(toast.style, {
       position: 'fixed', right: '18px', bottom: '18px', zIndex: '2147483647', maxWidth: '340px',
       padding: '10px 14px', border: '1px solid rgba(215,255,100,.72)', borderRadius: '8px', color: '#f5f7f1', background: '#12151d',
@@ -153,12 +154,40 @@
     }, 8000);
   }
 
-  async function pageSource() {
-    try {
-      const response = await fetch(location.href, {credentials: 'include'});
-      if (response.ok) return await response.text();
-    } catch {}
-    return '<!doctype html>\n' + document.documentElement.outerHTML;
+  function pageSnapshot() {
+    const clone = document.documentElement.cloneNode(true);
+    clone.querySelectorAll('[data-stai-overlay="true"]').forEach((node) => node.remove());
+    const sourceCanvases = Array.from(document.querySelectorAll('canvas'));
+    const clonedCanvases = Array.from(clone.querySelectorAll('canvas'));
+    sourceCanvases.forEach((source, index) => {
+      const target = clonedCanvases[index];
+      if (!target || typeof source.toDataURL !== 'function') return;
+      try {
+        const image = document.createElement('img');
+        for (const attribute of Array.from(target.attributes)) image.setAttribute(attribute.name, attribute.value);
+        image.setAttribute('src', source.toDataURL('image/png'));
+        image.setAttribute('data-stai-canvas-snapshot', 'true');
+        target.replaceWith(image);
+      } catch {}
+    });
+    const doctype = document.doctype ? '<!doctype ' + document.doctype.name + '>\n' : '<!doctype html>\n';
+    return doctype + clone.outerHTML;
+  }
+
+  function downloadPageSnapshot(language) {
+    return new Promise((resolve) => {
+      try {
+        chrome.runtime.sendMessage({
+          type: 'STAI_DOWNLOAD_PAGE_SNAPSHOT',
+          payload: {html: pageSnapshot(), sourceUrl: location.href}
+        }, (response) => resolve(response || {ok: false}));
+      } catch {
+        resolve({ok: false});
+      }
+    }).then((response) => {
+      if (response.ok) showSourceDownloaded(language, response.filename || 'page.html', response.omitted);
+      return response;
+    });
   }
 
   function rewriteIdReferences(value, idMap) {
@@ -379,13 +408,9 @@
       showCaptureReady(message.title || 'element', message.language, message.code || '');
       sendResponse({ok: true});
     }
-    if (message && message.type === 'STAI_COPY_PAGE_SOURCE') {
-      pageSource()
-        .then(copyCode)
-        .then((copied) => {
-          if (copied) showSourceCopied(message.language);
-          sendResponse({ok: copied});
-        })
+    if (message && message.type === 'STAI_DOWNLOAD_PAGE_SNAPSHOT') {
+      downloadPageSnapshot(message.language)
+        .then((response) => sendResponse(response))
         .catch(() => sendResponse({ok: false}));
       return true;
     }

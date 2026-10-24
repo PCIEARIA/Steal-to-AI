@@ -74,3 +74,48 @@ test('an extracted element notifies its source page that code is ready to copy',
     }]])
   );
 });
+
+test('ultimate mode downloads a packaged offline page instead of returning bare HTML', async () => {
+  const [backgroundSource, archiveSource] = await Promise.all([
+    readFile(new URL('../extension/background.js', import.meta.url), 'utf8'),
+    readFile(new URL('../extension/page-archive.js', import.meta.url), 'utf8')
+  ]);
+  const downloads = [];
+  const revoked = [];
+  let onMessage;
+  class SnapshotURL extends URL {}
+  SnapshotURL.createObjectURL = () => 'blob:stai-snapshot';
+  SnapshotURL.revokeObjectURL = (url) => revoked.push(url);
+  const context = {
+    self: null,
+    URL: SnapshotURL,
+    Blob,
+    btoa(value) { return Buffer.from(value, 'binary').toString('base64'); },
+    setTimeout(callback) { callback(); },
+    importScripts() {},
+    fetch() { throw new Error('No network fetch expected for an empty snapshot.'); },
+    chrome: {
+      runtime: {onMessage: {addListener(listener) { onMessage = listener; }}},
+      downloads: {async download(details) { downloads.push(details); }},
+      storage: {local: {async set() {}, async get() { return {}; }}},
+      tabs: {}, scripting: {}
+    }
+  };
+  context.self = context;
+  vm.createContext(context);
+  vm.runInContext(archiveSource, context);
+  vm.runInContext(backgroundSource, context);
+
+  const response = await new Promise((resolve) => {
+    assert.equal(onMessage({
+      type: 'STAI_DOWNLOAD_PAGE_SNAPSHOT',
+      payload: {sourceUrl: 'https://example.com/design', html: '<!doctype html><html><body>Snapshot</body></html>'}
+    }, {}, resolve), true);
+  });
+
+  assert.equal(response.ok, true);
+  assert.match(response.filename, /^steal-to-ai-example-com-\d+\.html$/);
+  assert.equal(downloads.length, 1);
+  assert.equal(downloads[0].url, 'blob:stai-snapshot');
+  assert.equal(revoked[0], 'blob:stai-snapshot');
+});
