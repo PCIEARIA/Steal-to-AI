@@ -10,7 +10,7 @@ const strings = {
     ready: '準備好了，挑一個你想帶走的元素。',
     picking: '正在選取。點頁面上的元素，Esc 可取消。',
     noTab: '找不到可用的頁面。', normalSite: '請先開啟一般網頁，再試一次。',
-    captured: '已擷取，可直接複製。', copied: '已複製 Clean HTML/CSS。', copy: '複製', copiedShort: '已複製',
+    captured: '已選取元素，可複製程式碼。', selected: '已選取', copyPrompt: '下一步：按「複製程式碼」把 Clean HTML/CSS 放進剪貼簿。', codePreview: '程式碼預覽', codePreviewHint: '將會完整複製', copied: '已複製 Clean HTML/CSS。', copy: '複製程式碼', copiedShort: '已複製',
     dynamic: '動態效果', dynamicHint: '輸出規則',
     smart: '智慧模式（預設）', smartDesc: '偵測到互動、動畫或偽元素才帶上',
     all: '全部帶上', allDesc: '盡量保留所有可取得的互動規則',
@@ -29,7 +29,7 @@ const strings = {
     ready: 'Ready when you spot something worth keeping.',
     picking: 'Picking is on. Click an element, or press Esc to cancel.',
     noTab: 'No usable page is open.', normalSite: 'Open a normal website, then try again.',
-    captured: 'Captured and ready to copy.', copied: 'Clean HTML/CSS copied.', copy: 'Copy', copiedShort: 'Copied',
+    captured: 'Element selected and ready to copy.', selected: 'Selected', copyPrompt: 'Next: press Copy code to put the Clean HTML/CSS on your clipboard.', codePreview: 'Code preview', codePreviewHint: 'Full code will be copied', copied: 'Clean HTML/CSS copied.', copy: 'Copy code', copiedShort: 'Copied',
     dynamic: 'Dynamic effects', dynamicHint: 'export rules',
     smart: 'Smart (default)', smartDesc: 'Adds states, motion, or pseudo-elements only when found',
     all: 'Include all', allDesc: 'Keeps every accessible interaction rule',
@@ -46,6 +46,8 @@ const status = document.querySelector('#status');
 const title = document.querySelector('#title');
 const resultDetail = document.querySelector('#result-detail');
 const captureResult = document.querySelector('#capture-result');
+const codePreview = document.querySelector('#code-preview');
+const codePreviewContent = document.querySelector('#code-preview-content');
 const workspace = document.querySelector('#workspace');
 const screenshot = document.querySelector('#screenshot');
 const languageButtons = document.querySelectorAll('[data-language]');
@@ -86,9 +88,13 @@ async function persistPreferences() {
 function showResult(payload) {
   if (!payload) return;
   resultText = payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
-  title.textContent = payload.title;
-  resultDetail.textContent = payload.screenshotFileName ? text('saved') + ' · ' + payload.screenshotFileName : text('captured');
+  title.textContent = text('selected') + '：' + payload.title;
+  resultDetail.textContent = payload.screenshotFileName
+    ? text('copyPrompt') + ' ' + text('saved') + ' · ' + payload.screenshotFileName
+    : text('copyPrompt');
+  codePreviewContent.textContent = resultText;
   captureResult.hidden = false;
+  codePreview.hidden = false;
   copy.disabled = false;
   status.textContent = text('captured');
 }
