@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Liquid-glass lens</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { min-height: 100vh; margin: 0; overflow: hidden; background: #fff; }
+      .stage { position: relative; width: 100vw; height: 100vh; overflow: hidden; background: #fff; touch-action: none; }
+      .background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+      .liquid-lens { position: absolute; top: 50%; left: 50%; width: 210px; height: 150px; border: 1px solid rgba(255,255,255,.42); border-radius: 75px; background: linear-gradient(145deg, rgba(255,255,255,.20), rgba(255,255,255,.055) 47%, rgba(255,255,255,.16)); box-shadow: 1.4px 8.1px 14.1px rgba(0,0,0,.18), .7px 4px 24px rgba(0,0,0,.22) inset, -.7px -4px 24px rgba(255,255,255,.22) inset; backdrop-filter: url(#lens-refraction) blur(.25px) saturate(1.25); -webkit-backdrop-filter: url(#lens-refraction) blur(.25px) saturate(1.25); cursor: grab; transform: translate(-50%, -50%); touch-action: none; }
+      .liquid-lens::after { content: ""; position: absolute; inset: 10px 18px auto; height: 42px; border-radius: inherit; background: linear-gradient(180deg, rgba(255,255,255,.33), transparent); filter: blur(7px); opacity: .72; pointer-events: none; }
+      .liquid-lens.is-dragging { cursor: grabbing; }
+    </style>
+  </head>
+  <body>
+    <main class="stage">
+      <img class="background" src="./assets/task-mtfswvmtdph96.png" alt="" draggable="false" />
+      <svg aria-hidden="true" width="0" height="0" focusable="false">
+        <filter id="lens-refraction" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency=".012 .022" numOctaves="2" seed="7" result="waves" />
+          <feDisplacementMap in="SourceGraphic" in2="waves" scale="21" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+      <div class="liquid-lens" role="presentation"></div>
+    </main>
+    <script>
+      const stage = document.querySelector('.stage');
+      const lens = document.querySelector('.liquid-lens');
+      let drag;
+
+      lens.addEventListener('pointerdown', (event) => {
+        const box = lens.getBoundingClientRect();
+        drag = {pointerId: event.pointerId, offsetX: event.clientX - box.left, offsetY: event.clientY - box.top};
+        lens.classList.add('is-dragging');
+        lens.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      });
+
+      lens.addEventListener('pointermove', (event) => {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        const width = lens.offsetWidth;
+        const height = lens.offsetHeight;
+        const left = Math.min(stage.clientWidth - width, Math.max(0, event.clientX - drag.offsetX));
+        const top = Math.min(stage.clientHeight - height, Math.max(0, event.clientY - drag.offsetY));
+        lens.style.left = `${left}px`;
+        lens.style.top = `${top}px`;
+        lens.style.transform = 'none';
+      });
+
+      function finishDrag(event) {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        lens.releasePointerCapture(event.pointerId);
+        lens.classList.remove('is-dragging');
+        drag = null;
+      }
+
+      lens.addEventListener('pointerup', finishDrag);
+      lens.addEventListener('pointercancel', finishDrag);
+    </script>
+  </body>
+</html>
