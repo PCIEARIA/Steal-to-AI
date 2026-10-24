@@ -18,7 +18,8 @@ const strings = {
     screenshot: '視覺參考截圖', saveScreenshot: '儲存選取區域截圖', screenshotDesc: '裁成 PNG，直接下載到 Downloads',
     ultimate: '究極模式', ultimateHint: '完整離線快照（HTML + CSS + 素材）', copyPageSource: '下載完整網站包', sourcePreparing: '正在封裝完整網站…', sourceCopied: '完整網站包已下載，可交給 AI 或離線開啟。', sourceCopyFailed: '無法封裝完整網站。',
     saved: 'PNG 已下載', footer: '來源腳本、事件與追蹤屬性不會被帶走。',
-    updateAvailable: '發現 v{version} 新版本。', getUpdate: '前往更新'
+    updateAvailable: '發現 v{version} 新版本。', getUpdate: '前往更新',
+    starPrompt: '覺得好用嗎？請給我一個 Star！', starPromptBody: '你的支持能幫助 Steal to AI 繼續改進。', starPromptAction: '前往 GitHub', starPromptDismiss: '稍後再說'
   },
   en: {
     onboardingKicker: 'Bring web details to AI',
@@ -39,7 +40,8 @@ const strings = {
     screenshot: 'Visual reference', saveScreenshot: 'Save selected-area screenshot', screenshotDesc: 'Crop as PNG and download to Downloads',
     ultimate: 'Ultimate mode', ultimateHint: 'offline snapshot (HTML + CSS + assets)', copyPageSource: 'Download full page package', sourcePreparing: 'Packaging the complete page…', sourceCopied: 'Full page package downloaded. Open it offline or give it to AI.', sourceCopyFailed: 'Could not package the complete page.',
     saved: 'PNG downloaded', footer: 'Source scripts, events, and tracking attributes stay behind.',
-    updateAvailable: 'Update v{version} is available.', getUpdate: 'Get update'
+    updateAvailable: 'Update v{version} is available.', getUpdate: 'Get update',
+    starPrompt: 'Finding Steal to AI useful?', starPromptBody: 'A GitHub star helps keep the project improving.', starPromptAction: 'Open GitHub', starPromptDismiss: 'Later'
   }
 };
 
@@ -62,11 +64,16 @@ const effects = document.querySelectorAll('input[name="effectMode"]');
 const updateStatus = document.querySelector('#update-status');
 const updateMessage = document.querySelector('#update-message');
 const updateLink = document.querySelector('#update-link');
+const starPrompt = document.querySelector('#star-prompt');
+const starPromptLink = document.querySelector('#star-prompt-link');
+const starPromptDismiss = document.querySelector('#star-prompt-dismiss');
 const updateManifestUrl = 'https://raw.githubusercontent.com/PCIEARIA/Steal-to-AI/main/extension/manifest.json';
 const updateRepoUrl = 'https://github.com/PCIEARIA/Steal-to-AI';
 let preferences = {...defaults};
 let resultText = '';
 let lastPayload = null;
+let codeCopyCount = 0;
+const starPromptUrl = 'https://github.com/PCIEARIA/Steal-to-AI';
 const companionSkillVersion = '0.1.1';
 const companionSkillPrompt = 'Check whether the steal-to-ai-component skill is available in your environment and read its version field. This export requires version ' + companionSkillVersion + ' or newer. If the installed Skill meets that version, use it and continue without asking. If it is unavailable, has no version, or is older, ask the user once whether they want to install or update it from https://github.com/PCIEARIA/Steal-to-AI/tree/main/skills/steal-to-ai-component for a better component-integration workflow. If they decline or installation/update is unavailable, continue without blocking or asking again.';
 const liquidGlassDecisionPrompt = "Ask the user first whether this asset needs a liquid-glass treatment. If yes, use https://github.com/martin65536/liquid-glass-webgl as an implementation reference. Before copying any code, ask whether the user owns the rights or has permission to copy and integrate the referenced code. If the user confirms, copy only the necessary component code, preserve required attribution and license notices, and comply with its license; do not copy the whole repository or replace their project stack. If not, adapt only the necessary techniques. If no, recreate the asset faithfully from the captured code below.";
@@ -169,6 +176,16 @@ function renderPreferences() {
   renderCopy();
 }
 
+function showStarPrompt() {
+  if (starPrompt) starPrompt.hidden = false;
+}
+
+async function recordCodeCopy() {
+  codeCopyCount += 1;
+  await chrome.storage.local.set({codeCopyCount});
+  if (codeCopyCount >= 76 && (codeCopyCount - 76) % 75 === 0) showStarPrompt();
+}
+
 async function persistPreferences() {
   await chrome.storage.local.set({preferences});
 }
@@ -226,8 +243,9 @@ async function setLanguage(language) {
   renderCopy();
 }
 
-chrome.storage.local.get(['lastExtraction', 'isPicking', 'hasSeenOnboarding', 'preferences']).then((state) => {
+chrome.storage.local.get(['lastExtraction', 'isPicking', 'hasSeenOnboarding', 'preferences', 'codeCopyCount']).then((state) => {
   preferences = normalizePreferences(state.preferences);
+  codeCopyCount = Number.isInteger(state.codeCopyCount) && state.codeCopyCount >= 0 ? state.codeCopyCount : 0;
   renderPreferences();
   if (state.hasSeenOnboarding !== true) {
     chrome.runtime.sendMessage({type: 'STAI_OPEN_ONBOARDING'});
@@ -256,10 +274,13 @@ screenshot.addEventListener('change', async () => {
 copyPageSource.addEventListener('click', copySource);
 
 updateLink.addEventListener('click', () => chrome.tabs.create({url: updateRepoUrl}));
+if (starPromptLink) starPromptLink.addEventListener('click', () => chrome.tabs.create({url: starPromptUrl}));
+if (starPromptDismiss) starPromptDismiss.addEventListener('click', () => { starPrompt.hidden = true; });
 
 copy.addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(resultText);
+    await recordCodeCopy();
     copy.textContent = text('copiedShort');
     status.textContent = text('copied');
     window.setTimeout(() => { copy.textContent = text('copy'); }, 1200);

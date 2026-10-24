@@ -37,6 +37,13 @@ h1 { max-width: 280px; margin: 0; color: #f8faf5; font-size: 28px; letter-spacin
 .update-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -2px 0 10px; padding: 7px 8px; border: 1px solid rgba(215,255,100,.36); border-radius: 6px; color: #dce8be; background: rgba(215,255,100,.07); font-size: 9px; line-height: 1.35; }
 .update-status button { flex: 0 0 auto; border: 0; padding: 4px 0 4px 7px; color: #d7ff64; background: transparent; font-size: 9px; font-weight: 850; }
 .update-status button:hover { color: #efffb2; }
+.star-prompt { margin: 0 0 10px; padding: 10px; border: 1px solid rgba(215,255,100,.55); border-radius: 8px; background: linear-gradient(135deg, rgba(215,255,100,.13), rgba(215,255,100,.035)); }
+.star-prompt strong { display: block; color: #f7faf1; font-size: 11px; font-weight: 850; }
+.star-prompt span { display: block; margin-top: 4px; color: #bbc2b2; font-size: 9px; line-height: 1.4; }
+.star-actions { display: flex; gap: 8px; margin-top: 8px; }
+.star-actions button { min-height: 26px; padding: 0 8px; border-radius: 5px; font-size: 9px; font-weight: 850; }
+.star-actions button:first-child { border: 1px solid #d7ff64; color: #10140d; background: #d7ff64; }
+.star-actions button:last-child { border: 1px solid #424c5b; color: #bdc5cf; background: transparent; }
 .settings-section { padding: 11px 0 10px; border-top: 1px solid #2a303a; }
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; color: #f2f4ef; font-size: 11px; font-weight: 800; }
 .section-heading small { color: #777f8c; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 600; }
