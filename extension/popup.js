@@ -64,7 +64,14 @@ let preferences = {...defaults};
 let resultText = '';
 
 function formatCode(payload) {
-  const reference = payload.sourceUrl ? '<!-- Source reference: ' + payload.sourceUrl + ' -->\n\n' : '';
+  const references = [];
+  if (payload.sourceUrl) references.push('<!-- Source reference: ' + payload.sourceUrl + ' -->');
+  for (const interaction of Array.isArray(payload.interactions) ? payload.interactions : []) {
+    if (interaction && interaction.type === 'drag' && interaction.selector) {
+      references.push('<!-- Interaction reference (inferred): ' + interaction.selector + ' is draggable. Recreate it with pointerdown, pointermove, and pointerup; keep it within the component bounds. -->');
+    }
+  }
+  const reference = references.length ? references.join('\n') + '\n\n' : '';
   return reference + payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
 }
 

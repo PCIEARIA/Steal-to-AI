@@ -11,6 +11,8 @@ Steal to AI is a Chrome Manifest V3 extension that turns a visible webpage eleme
 - Selects a visible DOM element directly from an ordinary webpage.
 - Produces cleaned HTML plus computed CSS instead of a vague screenshot reference.
 - Can preserve interaction rules and animation information, or export static-only CSS.
+- Keeps SVG filter IDs and their `filter` / `backdrop-filter` references, so effects such as liquid-glass refraction and reflection remain portable.
+- Adds an explicit AI interaction hint when the selected component exposes a draggable surface.
 - Optionally saves a pixel-accurate PNG crop of the selected region to Downloads.
 - Removes source scripts, event handlers, tracking attributes, and other page noise from the export.
 
@@ -30,7 +32,7 @@ No build step, package manager, or Chrome Web Store upload is required. The inst
 5. Choose `Steal-to-AI/extension` — **not** the repository root.
 6. Pin **Steal to AI** from Chrome's Extensions menu.
 
-You should now see **Steal to AI**, version `0.1.2`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
+You should now see **Steal to AI**, version `0.1.4`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
 
 ## Quick install for AI coding agents
 
@@ -82,6 +84,7 @@ Enable **儲存選取區域截圖** / **Save selected-area screenshot** in the c
 - Cross-origin iframe interiors are excluded.
 - Image URLs remain remote URLs; they are not embedded or downloaded.
 - Steal to AI reproduces presentation HTML/CSS. It intentionally does not copy source-site JavaScript behaviour, analytics, event handlers, or credentials.
+- A drag hint tells your AI to recreate pointer interaction, but the extension never copies a source site's event code directly.
 
 ## Development
 

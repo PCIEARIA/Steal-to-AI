@@ -70,7 +70,8 @@ test('starting the picker closes the popup after the page picker is ready', asyn
               title: 'button · 160 × 48',
               sourceUrl: 'https://example.com/components/button',
               html: '<button class="stai-button">Save</button>',
-              css: '.stai-button {\n  color: white;\n}'
+              css: '.stai-button {\n  color: white;\n}',
+              interactions: [{type: 'drag', selector: '.stai-button__lens'}]
             }
           });
         },
@@ -94,4 +95,5 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   assert.ok(writes.some((value) => value.isPicking === true));
   assert.equal(closeCount, 1);
   assert.match(previewContent.textContent, /^<!-- Source reference: https:\/\/example\.com\/components\/button -->/);
+  assert.match(previewContent.textContent, /\.stai-button__lens is draggable/);
 });

@@ -4,7 +4,7 @@
     'height', 'min-height', 'max-height', 'margin', 'padding', 'overflow', 'opacity', 'visibility', 'border', 'border-radius',
     'background', 'background-color', 'background-image', 'background-position', 'background-repeat', 'background-size', 'box-shadow',
     'color', 'font-family', 'font-size', 'font-style', 'font-weight', 'line-height', 'letter-spacing', 'text-align', 'text-decoration',
-    'text-transform', 'text-shadow', 'white-space', 'cursor', 'transform', 'transform-origin', 'filter', 'transition', 'animation',
+    'text-transform', 'text-shadow', 'white-space', 'cursor', 'transform', 'transform-origin', 'filter', 'backdrop-filter', 'transition', 'animation',
     'object-fit', 'object-position', 'flex', 'flex-direction', 'flex-wrap', 'align-items', 'justify-content', 'gap', 'grid-template-columns',
     'grid-template-rows', 'grid-column', 'grid-row', 'aspect-ratio'
   ];
@@ -115,7 +115,15 @@
     }, 8000);
   }
 
-  function styleFor(element, pseudo, effectMode) {
+  function rewriteIdReferences(value, idMap) {
+    if (!idMap || !idMap.size) return value;
+    return value.replace(/url\(\s*(['"]?)#([^)'"\s]+)\1\s*\)/g, (match, quote, id) => {
+      const replacement = idMap.get(id);
+      return replacement ? 'url(#' + replacement + ')' : match;
+    });
+  }
+
+  function styleFor(element, pseudo, effectMode, idMap) {
     const computed = getComputedStyle(element, pseudo || null);
     const result = {};
     for (const property of properties) {
@@ -123,17 +131,39 @@
       const value = computed.getPropertyValue(property).trim();
       if (property === 'transition' && value === 'all 0s ease 0s') continue;
       if (property === 'animation' && value.startsWith('none ')) continue;
-      if (value && value !== 'normal' && value !== 'none' && value !== 'auto' && value !== '0s') result[camel(property)] = value;
+      if (value && value !== 'normal' && value !== 'none' && value !== 'auto' && value !== '0s') result[camel(property)] = rewriteIdReferences(value, idMap);
     }
     return result;
   }
 
-  function copyAttributes(source, clone) {
+  function idMapFor(source, rootClass) {
+    const idMap = new Map();
+    function collect(element) {
+      if (!element || element.nodeType !== Node.ELEMENT_NODE) return;
+      const id = Array.from(element.attributes || []).find((attribute) => attribute.name.toLowerCase() === 'id');
+      if (id && id.value) idMap.set(id.value, rootClass + '-id-' + (idMap.size + 1));
+      for (const child of Array.from(element.childNodes || [])) collect(child);
+    }
+    collect(source);
+    return idMap;
+  }
+
+  function copyAttributes(source, clone, idMap) {
     for (const attribute of Array.from(clone.attributes)) clone.removeAttribute(attribute.name);
     for (const attribute of Array.from(source.attributes)) {
       const name = attribute.name.toLowerCase();
-      if (name === 'class' || name === 'id' || name === 'style' || name === 'nonce' || name.startsWith('on') || name.startsWith('data-')) continue;
+      if (name === 'class' || name === 'style' || name === 'nonce' || name.startsWith('on') || name.startsWith('data-')) continue;
+      if (name === 'id') {
+        const id = idMap.get(attribute.value);
+        if (id) clone.setAttribute(attribute.name, id);
+        continue;
+      }
       if (name === 'href' || name === 'src') {
+        if (name === 'href' && attribute.value.startsWith('#')) {
+          const id = idMap.get(attribute.value.slice(1));
+          clone.setAttribute(attribute.name, id ? '#' + id : attribute.value);
+          continue;
+        }
         try { clone.setAttribute(attribute.name, new URL(attribute.value, document.baseURI).href); } catch { clone.setAttribute(attribute.name, attribute.value); }
       } else clone.setAttribute(attribute.name, attribute.value);
     }
@@ -143,7 +173,7 @@
     if (source.nodeType === Node.TEXT_NODE) return document.createTextNode(source.textContent || '');
     if (source.nodeType !== Node.ELEMENT_NODE || blocked.has(source.tagName)) return null;
     const clone = source.cloneNode(false);
-    copyAttributes(source, clone);
+    copyAttributes(source, clone, state.idMap);
     const className = state.count === 0 ? rootClass : rootClass + '__' + source.tagName.toLowerCase() + '-' + state.count;
     state.count += 1;
     clone.setAttribute('class', className);
@@ -155,7 +185,7 @@
     return clone;
   }
 
-  function interactionRules(element, className, effectMode) {
+  function interactionRules(element, className, effectMode, idMap) {
     if (effectMode === 'static') return [];
     const output = [];
     const states = effectMode === 'all'
@@ -175,7 +205,7 @@
           const declarations = {};
           for (const property of Array.from(item.style)) {
             if (effectMode === 'static' && staticProperties.has(property)) continue;
-            declarations[camel(property)] = item.style.getPropertyValue(property).trim();
+            declarations[camel(property)] = rewriteIdReferences(item.style.getPropertyValue(property).trim(), idMap);
           }
           if (Object.keys(declarations).length) output.push(rule(className, declarations, state));
         }
@@ -206,20 +236,30 @@
     return keyframes;
   }
 
+  function interactionHints(records, effectMode) {
+    if (effectMode === 'static') return [];
+    const draggable = records.find((record) => {
+      const cursor = getComputedStyle(record.source).getPropertyValue('cursor').trim();
+      return cursor === 'grab' || cursor === 'grabbing';
+    });
+    return draggable ? [{type: 'drag', selector: '.' + draggable.className}] : [];
+  }
+
   function extract(element, preferences) {
     const rootClass = 'stai-' + element.tagName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     const records = [];
-    const clone = cloneTree(element, rootClass, {count: 0}, records);
+    const idMap = idMapFor(element, rootClass);
+    const clone = cloneTree(element, rootClass, {count: 0, idMap}, records);
     const rules = [];
     for (const record of records) {
-      rules.push(rule(record.className, styleFor(record.source, null, preferences.effectMode)));
+      rules.push(rule(record.className, styleFor(record.source, null, preferences.effectMode, idMap)));
       if (preferences.effectMode !== 'static') {
         for (const pseudo of ['::before', '::after']) {
           const content = getComputedStyle(record.source, pseudo).getPropertyValue('content').trim();
-          if (content && content !== 'none' && content !== 'normal') rules.push(rule(record.className, styleFor(record.source, pseudo, preferences.effectMode), pseudo));
+          if (content && content !== 'none' && content !== 'normal') rules.push(rule(record.className, styleFor(record.source, pseudo, preferences.effectMode, idMap), pseudo));
         }
       }
-      rules.push(...interactionRules(record.source, record.className, preferences.effectMode));
+      rules.push(...interactionRules(record.source, record.className, preferences.effectMode, idMap));
     }
     rules.push(...animationKeyframes(records, preferences.effectMode));
     const rect = element.getBoundingClientRect();
@@ -227,7 +267,8 @@
       title: element.tagName.toLowerCase() + ' · ' + Math.round(rect.width) + ' × ' + Math.round(rect.height),
       sourceUrl: location.href,
       html: clone.outerHTML,
-      css: rules.join('\n\n')
+      css: rules.join('\n\n'),
+      interactions: interactionHints(records, preferences.effectMode)
     };
     if (preferences.screenshotMode === 'download') {
       payload.capture = {x: rect.left, y: rect.top, width: rect.width, height: rect.height, scale: window.devicePixelRatio};
