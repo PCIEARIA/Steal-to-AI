@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-async function startPicker({sendMessage, cursor = 'none', computedValues = {}, computedStyle}) {
+async function startPicker({sendMessage, cursor = 'none', computedValues = {}, computedStyle, pageSource = '<html></html>', clipboardWrites = []}) {
   const source = await readFile(new URL('../extension/content.js', import.meta.url), 'utf8');
   const listeners = new Map();
   let onMessage;
   class Element {}
-  const documentElement = {append() {}};
+  const documentElement = {append() {}, outerHTML: '<html><body>Rendered fallback</body></html>'};
   const document = {
     documentElement,
     body: {},
@@ -35,10 +35,19 @@ async function startPicker({sendMessage, cursor = 'none', computedValues = {}, c
     window: {setTimeout() {}},
     location: {href: 'https://example.com/designs/launch'},
     requestAnimationFrame(callback) { callback(); },
-    navigator: {clipboard: {async writeText() {}}}
+    fetch: async () => ({ok: true, async text() { return pageSource; }}),
+    navigator: {clipboard: {async writeText(value) { clipboardWrites.push(value); }}}
   });
   onMessage({type: 'STAI_START_PICKING', preferences: {effectMode: 'smart'}}, {}, () => {});
-  return {listeners, document, Element};
+  return {
+    listeners, document, Element,
+    dispatch(message) {
+      return new Promise((resolve) => {
+        const keepChannel = onMessage(message, {}, resolve);
+        if (keepChannel !== true) resolve({ok: false});
+      });
+    }
+  };
 }
 
 test('blocked source elements are ignored instead of crashing the picker', async () => {
@@ -221,4 +230,15 @@ test('a full-card absolute base layer resolves to its composite card instead of 
   listeners.get('click')({target: baseLayer, preventDefault() {}, stopImmediatePropagation() {}});
 
   assert.equal(sent[0].payload.title, 'div · 766 × 460');
+});
+
+test('ultimate mode copies the fetched full-page HTML to the clipboard', async () => {
+  const clipboardWrites = [];
+  const source = '<!doctype html><html><head><script src="app.js"></script></head><body>Liquid glass</body></html>';
+  const {dispatch} = await startPicker({sendMessage() {}, pageSource: source, clipboardWrites});
+
+  const result = await dispatch({type: 'STAI_COPY_PAGE_SOURCE', language: 'en'});
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(clipboardWrites, [source]);
 });

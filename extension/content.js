@@ -131,6 +131,36 @@
     }, 8000);
   }
 
+  function showSourceCopied(language) {
+    if (captureToast) captureToast.remove();
+    const toast = document.createElement('div');
+    toast.dataset.staiOverlay = 'true';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.textContent = language === 'en'
+      ? 'Full page source copied. Paste it into your AI.'
+      : '完整頁面原始碼已複製，可直接貼到 AI。';
+    Object.assign(toast.style, {
+      position: 'fixed', right: '18px', bottom: '18px', zIndex: '2147483647', maxWidth: '340px',
+      padding: '10px 14px', border: '1px solid rgba(215,255,100,.72)', borderRadius: '8px', color: '#f5f7f1', background: '#12151d',
+      boxShadow: '0 14px 34px rgba(0,0,0,.28)', font: '700 12px/1.45 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+    });
+    document.documentElement.append(toast);
+    captureToast = toast;
+    window.setTimeout(() => {
+      if (captureToast === toast) captureToast = null;
+      toast.remove();
+    }, 8000);
+  }
+
+  async function pageSource() {
+    try {
+      const response = await fetch(location.href, {credentials: 'include'});
+      if (response.ok) return await response.text();
+    } catch {}
+    return '<!doctype html>\n' + document.documentElement.outerHTML;
+  }
+
   function rewriteIdReferences(value, idMap) {
     if (!idMap || !idMap.size) return value;
     return value.replace(/url\(\s*(['"]?)#([^)'"\s]+)\1\s*\)/g, (match, quote, id) => {
@@ -348,6 +378,16 @@
     if (message && message.type === 'STAI_SHOW_CAPTURE_READY') {
       showCaptureReady(message.title || 'element', message.language, message.code || '');
       sendResponse({ok: true});
+    }
+    if (message && message.type === 'STAI_COPY_PAGE_SOURCE') {
+      pageSource()
+        .then(copyCode)
+        .then((copied) => {
+          if (copied) showSourceCopied(message.language);
+          sendResponse({ok: copied});
+        })
+        .catch(() => sendResponse({ok: false}));
+      return true;
     }
   });
 })();

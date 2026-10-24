@@ -33,7 +33,7 @@ No build step, package manager, or Chrome Web Store upload is required. The inst
 5. Choose `Steal-to-AI/extension` — **not** the repository root.
 6. Pin **Steal to AI** from Chrome's Extensions menu.
 
-You should now see **Steal to AI**, version `0.1.5`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
+You should now see **Steal to AI**, version `0.1.6`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
 
 ## Quick install for AI coding agents
 
@@ -60,6 +60,7 @@ Install the local Steal to AI Chrome extension for me. Do not build it and do no
 3. Press **開始選取** / **Start picking**. The small panel closes before selection mode starts, so your next click is the element you want.
 4. Hover to preview an element, then click once to capture it. Press `Esc` to cancel.
 5. Use **複製程式碼** / **Copy code** in the on-page confirmation to put the HTML/CSS directly on your clipboard. Reopen Steal to AI whenever you want to preview the generated code or change export settings.
+6. For an AI that needs the complete page context, use **究極模式 → 複製完整頁面原始碼** / **Ultimate mode → Copy full page source**. This copies the page's HTML source to your clipboard; linked CSS, JavaScript, and images remain linked by their original URLs.
 
 ## Update checks
 

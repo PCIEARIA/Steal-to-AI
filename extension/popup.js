@@ -16,6 +16,7 @@ const strings = {
     all: '全部帶上', allDesc: '盡量保留所有可取得的互動規則',
     static: '純靜態', staticDesc: '不帶動畫、狀態或過場',
     screenshot: '視覺參考截圖', saveScreenshot: '儲存選取區域截圖', screenshotDesc: '裁成 PNG，直接下載到 Downloads',
+    ultimate: '究極模式', ultimateHint: '整頁 HTML', copyPageSource: '複製完整頁面原始碼', sourcePreparing: '正在讀取完整頁面的原始碼…', sourceCopied: '完整頁面原始碼已複製，可直接貼到 AI。', sourceCopyFailed: '無法複製完整頁面原始碼。',
     saved: 'PNG 已下載', footer: '來源腳本、事件與追蹤屬性不會被帶走。',
     updateAvailable: '發現 v{version} 新版本。', getUpdate: '前往更新'
   },
@@ -36,6 +37,7 @@ const strings = {
     all: 'Include all', allDesc: 'Keeps every accessible interaction rule',
     static: 'Static only', staticDesc: 'No motion, states, or transitions',
     screenshot: 'Visual reference', saveScreenshot: 'Save selected-area screenshot', screenshotDesc: 'Crop as PNG and download to Downloads',
+    ultimate: 'Ultimate mode', ultimateHint: 'full-page HTML', copyPageSource: 'Copy full page source', sourcePreparing: 'Reading the full-page source…', sourceCopied: 'Full-page source copied. Paste it into your AI.', sourceCopyFailed: 'Could not copy the full-page source.',
     saved: 'PNG downloaded', footer: 'Source scripts, events, and tracking attributes stay behind.',
     updateAvailable: 'Update v{version} is available.', getUpdate: 'Get update'
   }
@@ -52,6 +54,7 @@ const codePreview = document.querySelector('#code-preview');
 const codePreviewContent = document.querySelector('#code-preview-content');
 const workspace = document.querySelector('#workspace');
 const screenshot = document.querySelector('#screenshot');
+const copyPageSource = document.querySelector('#copy-page-source');
 const languageButtons = document.querySelectorAll('[data-language]');
 const languageToggle = document.querySelector('[data-language-toggle]');
 const effects = document.querySelectorAll('input[name="effectMode"]');
@@ -166,6 +169,19 @@ async function startPicking() {
   status.textContent = text('picking');
 }
 
+async function copySource() {
+  const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+  if (!tab || !tab.id) { status.textContent = text('noTab'); return; }
+
+  copyPageSource.disabled = true;
+  status.textContent = text('sourcePreparing');
+  chrome.tabs.sendMessage(tab.id, {type: 'STAI_COPY_PAGE_SOURCE', language: preferences.language}, (response) => {
+    copyPageSource.disabled = false;
+    if (chrome.runtime.lastError) { status.textContent = text('normalSite'); return; }
+    status.textContent = response && response.ok ? text('sourceCopied') : text('sourceCopyFailed');
+  });
+}
+
 async function setLanguage(language) {
   preferences.language = language;
   await persistPreferences();
@@ -198,6 +214,8 @@ screenshot.addEventListener('change', async () => {
   preferences.screenshotMode = screenshot.checked ? 'download' : 'off';
   await persistPreferences();
 });
+
+copyPageSource.addEventListener('click', copySource);
 
 updateLink.addEventListener('click', () => chrome.tabs.create({url: updateRepoUrl}));
 

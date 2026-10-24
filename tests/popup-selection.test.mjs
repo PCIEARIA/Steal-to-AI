@@ -29,6 +29,7 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   const previewContent = makeNode();
   const workspace = makeNode();
   const screenshot = makeNode();
+  const copyPageSource = makeNode();
   const languageToggle = makeNode();
   const update = makeNode();
   const updateMessage = makeNode();
@@ -42,7 +43,7 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   const nodes = new Map([
     ['#start', start], ['#copy', copy], ['#status', status], ['#title', title], ['#result-detail', detail],
     ['#capture-result', result], ['#code-preview', preview], ['#code-preview-content', previewContent],
-    ['#workspace', workspace], ['#screenshot', screenshot], ['[data-language-toggle]', languageToggle], ['.choice-list', choiceList],
+    ['#workspace', workspace], ['#screenshot', screenshot], ['#copy-page-source', copyPageSource], ['[data-language-toggle]', languageToggle], ['.choice-list', choiceList],
     ['#update-status', update], ['#update-message', updateMessage], ['#update-link', updateLink]
   ]);
   const writes = [];
@@ -96,4 +97,10 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   assert.equal(closeCount, 1);
   assert.match(previewContent.textContent, /^<!-- Source reference: https:\/\/example\.com\/components\/button -->/);
   assert.match(previewContent.textContent, /\.stai-button__lens is draggable/);
+
+  await copyPageSource.handlers.click();
+  assert.equal(
+    JSON.stringify(sent.at(-1)),
+    JSON.stringify([42, {type: 'STAI_COPY_PAGE_SOURCE', language: 'en'}])
+  );
 });
