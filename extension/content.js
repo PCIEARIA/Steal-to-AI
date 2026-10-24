@@ -24,6 +24,13 @@
     };
   }
 
+  function sendRuntimeMessage(message) {
+    try {
+      const pending = chrome.runtime.sendMessage(message);
+      if (pending && typeof pending.catch === 'function') pending.catch(() => {});
+    } catch {}
+  }
+
   async function copyCode(text) {
     try {
       await navigator.clipboard.writeText(text);
@@ -218,6 +225,7 @@
       const target = event.target;
       if (!(target instanceof Element) || target.dataset.staiOverlay || target.closest('[data-stai-overlay]')) return null;
       if (target === document.documentElement || target === document.body) return null;
+      if (blocked.has(target.tagName)) return null;
       return target;
     }
     function stop() {
@@ -239,11 +247,11 @@
       event.preventDefault(); event.stopImmediatePropagation();
       const payload = extract(target, preferences);
       stop();
-      chrome.runtime.sendMessage({type: 'STAI_EXTRACTION', payload, language: preferences.language});
+      sendRuntimeMessage({type: 'STAI_EXTRACTION', payload, language: preferences.language});
     }
     function keydown(event) {
       if (event.key !== 'Escape') return;
-      event.preventDefault(); stop(); chrome.runtime.sendMessage({type: 'STAI_CANCELLED'});
+      event.preventDefault(); stop(); sendRuntimeMessage({type: 'STAI_CANCELLED'});
     }
     document.addEventListener('pointermove', move, true);
     document.addEventListener('click', choose, true);
