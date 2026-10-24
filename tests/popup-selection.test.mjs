@@ -95,8 +95,8 @@ test('starting the picker closes the popup after the page picker is ready', asyn
   );
   assert.ok(writes.some((value) => value.isPicking === true));
   assert.equal(closeCount, 1);
-  assert.match(previewContent.textContent, /^<!-- AI reconstruction instruction: Ask the user first whether this asset is liquid glass\./);
-  assert.match(previewContent.textContent, /If yes, retrieve https:\/\/github\.com\/Minecraftgoose\/GooseHyperGlassCDN and use it as the liquid-glass runtime; if no, recreate the asset faithfully from the captured code below\. -->/);
+  assert.match(previewContent.textContent, /^<!-- AI reconstruction instruction: Ask the user first whether this asset needs a liquid-glass treatment\./);
+  assert.match(previewContent.textContent, /If yes, use https:\/\/github\.com\/Minecraftgoose\/GooseHyperGlassCDN only as an implementation reference: adapt only the necessary liquid-glass techniques into the user's existing project; do not copy the whole repository or replace their project stack\. If no, recreate the asset faithfully from the captured code below\. -->/);
   assert.match(previewContent.textContent, /<!-- Source reference: https:\/\/example\.com\/components\/button -->/);
   assert.match(previewContent.textContent, /\.stai-button__lens is draggable/);
 

@@ -65,7 +65,7 @@ const updateManifestUrl = 'https://raw.githubusercontent.com/PCIEARIA/Steal-to-A
 const updateRepoUrl = 'https://github.com/PCIEARIA/Steal-to-AI';
 let preferences = {...defaults};
 let resultText = '';
-const liquidGlassDecisionPrompt = 'Ask the user first whether this asset is liquid glass. If yes, retrieve https://github.com/Minecraftgoose/GooseHyperGlassCDN and use it as the liquid-glass runtime; if no, recreate the asset faithfully from the captured code below.';
+const liquidGlassDecisionPrompt = "Ask the user first whether this asset needs a liquid-glass treatment. If yes, use https://github.com/Minecraftgoose/GooseHyperGlassCDN only as an implementation reference: adapt only the necessary liquid-glass techniques into the user's existing project; do not copy the whole repository or replace their project stack. If no, recreate the asset faithfully from the captured code below.";
 
 function formatCode(payload) {
   const references = ['<!-- AI reconstruction instruction: ' + liquidGlassDecisionPrompt + ' -->'];
