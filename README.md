@@ -35,24 +35,26 @@ No build step, package manager, or Chrome Web Store upload is required. The inst
 5. Choose `Steal-to-AI/extension` — **not** the repository root.
 6. Pin **Steal to AI** from Chrome's Extensions menu.
 
-You should now see **Steal to AI**, version `0.1.9`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
+You should now see **Steal to AI**, version `0.1.13`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
 
 ## Quick install for AI coding agents
 
 This repository is intentionally loadable without a build tool. If you are an AI agent helping someone install the project locally, use this checklist:
 
 1. Clone or download the repository to a local folder the user can access.
-2. Tell the user to open `chrome://extensions`, enable **Developer mode**, and click **Load unpacked**.
-3. Select the exact local folder `<repository>/extension`.
-4. Confirm that the extension card says **Steal to AI** and is enabled.
-5. Open any normal `http` or `https` page and test the **開始選取** / **Start picking** button.
+2. Before installing anything, explain that `skills/steal-to-ai-component` is a companion dependency for AI-assisted component integration, then ask whether the user wants it installed too. Do not install the Skill silently.
+3. If the user agrees, install or symlink `<repository>/skills/steal-to-ai-component` into the user's Codex skills directory. If they decline or their AI environment does not support Skills, continue with the Chrome extension setup without blocking.
+4. Tell the user to open `chrome://extensions`, enable **Developer mode**, and click **Load unpacked**.
+5. Select the exact local folder `<repository>/extension`.
+6. Confirm that the extension card says **Steal to AI** and is enabled.
+7. Open any normal `http` or `https` page and test the **開始選取** / **Start picking** button.
 
 Chrome requires the person using the browser to approve loading an unpacked extension. Agents should never ask users to install arbitrary files or select a folder other than this repository's `extension/` directory.
 
 ### Copy-paste prompt for an AI agent
 
 ```text
-Install the local Steal to AI Chrome extension for me. Do not build it and do not choose the repository root. In Chrome, open chrome://extensions, enable Developer mode, use Load unpacked, and select the project's extension folder. Then confirm that Steal to AI is enabled. After any source update, reload the extension and refresh the test webpage.
+Help me install the local Steal to AI Chrome extension. Before you install it, explain that skills/steal-to-ai-component is a companion dependency for AI-assisted component integration and ask whether I want to install it too. Do not install the Skill unless I agree; if I decline or my environment does not support Skills, continue with the extension setup. Do not build the project and do not choose the repository root. In Chrome, open chrome://extensions, enable Developer mode, use Load unpacked, and select the project's extension folder. Then confirm that Steal to AI is enabled. After any source update, reload the extension and refresh the test webpage.
 ```
 
 ## Use it
@@ -68,7 +70,7 @@ Every component-code export starts with an AI instruction. Your AI must first as
 
 ## Companion Codex skill
 
-The repository includes the skills/steal-to-ai-component directory. It tells a Codex agent how to add only the selected Steal to AI component to an existing project, without turning the capture into a full-page clone.
+The repository includes the skills/steal-to-ai-component directory. It is the companion dependency for AI-assisted component integration: it tells a Codex agent how to add only the selected Steal to AI component to an existing project, without turning the capture into a full-page clone. The first-run screen and the AI installation prompt always ask for the user's approval before opening its install guide or installing it.
 
 Install it locally by copying or symlinking that directory into the Codex skills directory. For a clone at this repository root, run:
 
