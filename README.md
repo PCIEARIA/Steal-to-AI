@@ -66,6 +66,17 @@ Install the local Steal to AI Chrome extension for me. Do not build it and do no
 
 Every component-code export starts with an AI instruction. Your AI must first ask whether the selected asset needs **liquid glass**. If you confirm it does, [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl) is only a technical reference: the AI should adapt the smallest needed WebGL techniques into your existing project, not copy the repository or replace your project's stack. Otherwise it should reconstruct only from the captured HTML/CSS that follows.
 
+## Companion Codex skill
+
+The repository includes the skills/steal-to-ai-component directory. It tells a Codex agent how to add only the selected Steal to AI component to an existing project, without turning the capture into a full-page clone.
+
+Install it locally by copying or symlinking that directory into the Codex skills directory. For a clone at this repository root, run:
+
+    mkdir -p ~/.codex/skills
+    ln -s "$PWD/skills/steal-to-ai-component" ~/.codex/skills/steal-to-ai-component
+
+Component exports check whether this optional skill is already available. If it is, the receiving AI proceeds without asking. If it is not, it asks the user once whether they want to install it, then continues normally whether the answer is yes or no.
+
 ## Update checks
 
 When the popup opens, Steal to AI checks the public extension manifest on GitHub. If a newer version is available, it shows the version and a **前往更新** / **Get update** button. The button opens the project page so you can fetch the latest `extension/` folder.
