@@ -96,7 +96,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.set({lastExtraction: payload, isPicking: false});
 
     if (sender.tab && Number.isInteger(sender.tab.id)) {
-      chrome.tabs.sendMessage(sender.tab.id, {type: 'STAI_SHOW_CAPTURE_READY', title: payload.title, language}).catch(() => {});
+      const code = payload.html + '\n\n<style>\n' + payload.css + '\n</style>';
+      chrome.tabs.sendMessage(sender.tab.id, {type: 'STAI_SHOW_CAPTURE_READY', title: payload.title, language, code}).catch(() => {});
     }
 
     if (capture && sender.tab && Number.isInteger(sender.tab.windowId)) {

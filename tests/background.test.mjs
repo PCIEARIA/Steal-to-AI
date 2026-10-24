@@ -63,6 +63,11 @@ test('an extracted element notifies its source page that code is ready to copy',
 
   assert.equal(
     JSON.stringify(sent),
-    JSON.stringify([[42, {type: 'STAI_SHOW_CAPTURE_READY', title: 'button · 120 × 40', language: 'zh'}]])
+    JSON.stringify([[42, {
+      type: 'STAI_SHOW_CAPTURE_READY',
+      title: 'button · 120 × 40',
+      language: 'zh',
+      code: '<button></button>\n\n<style>\n\n</style>'
+    }]])
   );
 });

@@ -24,25 +24,55 @@
     };
   }
 
-  function showCaptureReady(title, language) {
+  async function copyCode(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {}
+
+    const field = document.createElement('textarea');
+    field.value = text;
+    Object.assign(field.style, {position: 'fixed', opacity: '0', pointerEvents: 'none'});
+    document.documentElement.append(field);
+    field.select();
+    const copied = typeof document.execCommand === 'function' && document.execCommand('copy');
+    field.remove();
+    return copied;
+  }
+
+  function showCaptureReady(title, language, code) {
     if (captureToast) captureToast.remove();
     const toast = document.createElement('div');
+    const message = document.createElement('span');
+    const copyButton = document.createElement('button');
     const english = language === 'en';
     toast.dataset.staiOverlay = 'true';
     toast.setAttribute('role', 'status');
     toast.setAttribute('aria-live', 'polite');
-    toast.textContent = english
-      ? 'Captured ' + title + '. Open Steal to AI to copy your code.'
-      : '已擷取 ' + title + '。重新開啟 Steal to AI，按「複製程式碼」即可複製。';
+    message.textContent = english
+      ? 'Captured ' + title + '. Copy it now or reopen Steal to AI later.'
+      : '已擷取 ' + title + '。現在可直接複製，或稍後開啟 Steal to AI。';
+    copyButton.type = 'button';
+    copyButton.textContent = english ? 'Copy code' : '複製程式碼';
     Object.assign(toast.style, {
       position: 'fixed', right: '18px', bottom: '18px', zIndex: '2147483647', maxWidth: '340px',
-      padding: '11px 14px', border: '1px solid rgba(215,255,100,.72)', borderRadius: '8px',
+      display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 11px 10px 14px', border: '1px solid rgba(215,255,100,.72)', borderRadius: '8px',
       color: '#f5f7f1', background: '#12151d', boxShadow: '0 14px 34px rgba(0,0,0,.28)',
       font: '700 12px/1.45 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      letterSpacing: '-.01em', cursor: 'pointer', opacity: '0', transform: 'translateY(8px)',
+      letterSpacing: '-.01em', opacity: '0', transform: 'translateY(8px)',
       transition: 'opacity .18s ease, transform .18s ease'
     });
+    Object.assign(copyButton.style, {
+      flex: '0 0 auto', border: '1px solid #d7ff64', borderRadius: '5px', padding: '7px 8px',
+      color: '#10140d', background: '#d7ff64', font: '800 11px/1 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', cursor: 'pointer'
+    });
+    copyButton.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      const copied = await copyCode(code);
+      copyButton.textContent = copied ? (english ? 'Copied' : '已複製') : (english ? 'Copy failed' : '無法複製');
+    });
     toast.addEventListener('click', () => toast.remove());
+    toast.append(message, copyButton);
     document.documentElement.append(toast);
     captureToast = toast;
     requestAnimationFrame(() => {
@@ -227,7 +257,7 @@
       sendResponse({ok: true});
     }
     if (message && message.type === 'STAI_SHOW_CAPTURE_READY') {
-      showCaptureReady(message.title || 'element', message.language);
+      showCaptureReady(message.title || 'element', message.language, message.code || '');
       sendResponse({ok: true});
     }
   });
