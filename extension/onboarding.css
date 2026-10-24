@@ -5,6 +5,8 @@ body { min-width: 320px; min-height: 100vh; margin: 0; background: #12151d; }
 button { font: inherit; cursor: pointer; }
 .welcome-shell { position: relative; isolation: isolate; display: grid; min-height: 100vh; overflow: hidden; padding: 28px clamp(28px, 7vw, 112px) 25px; grid-template-rows: auto 1fr auto; background: radial-gradient(circle at 89% 24%, rgba(215,255,100,.11), transparent 23%), #12151d; }
 .topline { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand-lockup { display: flex; align-items: center; gap: 11px; }
+.brand-logo { width: 40px; height: 40px; flex: 0 0 auto; border: 1px solid rgba(255,255,255,.14); border-radius: 10px; object-fit: cover; }
 .wordmark { color: #f7f8f4; font-size: 24px; font-weight: 850; letter-spacing: -.08em; line-height: 1; }
 .wordmark i { color: #d7ff64; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .68em; font-style: normal; letter-spacing: -.1em; vertical-align: 3px; }
 .language-switch { display: flex; overflow: hidden; border: 1px solid #343b46; border-radius: 7px; }

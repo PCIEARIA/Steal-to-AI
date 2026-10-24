@@ -13,6 +13,8 @@ button { cursor: pointer; }
 .workspace { min-height: 452px; }
 .onboarding { min-height: 472px; }
 .masthead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.brand-lockup { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.brand-logo { width: 28px; height: 28px; flex: 0 0 auto; border: 1px solid rgba(255,255,255,.12); border-radius: 7px; object-fit: cover; }
 .wordmark { color: #f7f8f4; font-size: 17px; font-weight: 840; letter-spacing: -.07em; line-height: 1; }
 .wordmark i { color: #d7ff64; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .68em; font-style: normal; letter-spacing: -.1em; vertical-align: 2px; }
 .submark { margin: 5px 0 0; color: #767c8a; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; letter-spacing: .04em; }
