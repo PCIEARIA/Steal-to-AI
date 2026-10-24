@@ -30,7 +30,7 @@ No build step, package manager, or Chrome Web Store upload is required. The inst
 5. Choose `Steal-to-AI/extension` — **not** the repository root.
 6. Pin **Steal to AI** from Chrome's Extensions menu.
 
-You should now see **Steal to AI**, version `0.1.1`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
+You should now see **Steal to AI**, version `0.1.2`, enabled in the Extensions page. After source changes, open `chrome://extensions`, press Reload on the extension, then refresh the webpage you are testing.
 
 ## Quick install for AI coding agents
 

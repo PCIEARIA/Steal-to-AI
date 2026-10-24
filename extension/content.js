@@ -10,6 +10,7 @@
   ];
   const blocked = new Set(['SCRIPT', 'STYLE', 'LINK', 'IFRAME', 'OBJECT', 'EMBED', 'TEMPLATE', 'NOSCRIPT']);
   const staticProperties = new Set(['transition', 'animation']);
+  const contentTags = new Set(['A', 'AUDIO', 'BUTTON', 'CANVAS', 'IMG', 'INPUT', 'SELECT', 'SVG', 'TEXTAREA', 'VIDEO']);
   let activeStop = null;
   let captureToast = null;
 
@@ -29,6 +30,21 @@
       const pending = chrome.runtime.sendMessage(message);
       if (pending && typeof pending.catch === 'function') pending.catch(() => {});
     } catch {}
+  }
+
+  function hasComponentContent(element) {
+    if (contentTags.has(element.tagName)) return true;
+    if ((element.textContent || '').trim()) return true;
+    return Boolean(element.querySelector && element.querySelector('a, audio, button, canvas, img, input, select, svg, textarea, video'));
+  }
+
+  function nearestComponentTarget(element) {
+    let candidate = element;
+    while (candidate && candidate !== document.documentElement && candidate !== document.body) {
+      if (!blocked.has(candidate.tagName) && hasComponentContent(candidate)) return candidate;
+      candidate = candidate.parentElement;
+    }
+    return element;
   }
 
   async function copyCode(text) {
@@ -226,7 +242,7 @@
       if (!(target instanceof Element) || target.dataset.staiOverlay || target.closest('[data-stai-overlay]')) return null;
       if (target === document.documentElement || target === document.body) return null;
       if (blocked.has(target.tagName)) return null;
-      return target;
+      return nearestComponentTarget(target);
     }
     function stop() {
       document.removeEventListener('pointermove', move, true);
