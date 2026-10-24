@@ -11,6 +11,7 @@
   const blocked = new Set(['SCRIPT', 'STYLE', 'LINK', 'IFRAME', 'OBJECT', 'EMBED', 'TEMPLATE', 'NOSCRIPT']);
   const staticProperties = new Set(['transition', 'animation']);
   const contentTags = new Set(['A', 'AUDIO', 'BUTTON', 'CANVAS', 'IMG', 'INPUT', 'SELECT', 'TEXTAREA', 'VIDEO']);
+  const interactiveTags = new Set(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY']);
   let activeStop = null;
   let captureToast = null;
 
@@ -57,6 +58,8 @@
   function compositeCardTarget(element) {
     const parent = element && element.parentElement;
     if (!parent || parent === document.body || parent === document.documentElement) return element;
+    const role = element.getAttribute && element.getAttribute('role');
+    if (interactiveTags.has(element.tagName) || ['button', 'link', 'menuitem', 'tab', 'switch', 'checkbox', 'radio'].includes(role)) return element;
     if (getComputedStyle(element).getPropertyValue('position').trim() !== 'absolute') return element;
     const parentPosition = getComputedStyle(parent).getPropertyValue('position').trim();
     if (parentPosition !== 'relative' && parentPosition !== 'absolute') return element;

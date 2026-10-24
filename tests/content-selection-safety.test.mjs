@@ -247,6 +247,47 @@ test('a full-card absolute base layer resolves to its composite card instead of 
   assert.equal(sent[0].payload.title, 'div · 766 × 460');
 });
 
+test('an absolute button remains selectable instead of being promoted to its card', async () => {
+  const sent = [];
+  const {listeners, Element} = await startPicker({
+    sendMessage(message) { sent.push(message); },
+    computedStyle(element, property) {
+      if (property !== 'position') return 'none';
+      return element.role === 'card' ? 'relative' : 'absolute';
+    }
+  });
+  function element(tagName, role, width, height) {
+    const value = new Element();
+    value.role = role;
+    value.nodeType = 1;
+    value.tagName = tagName;
+    value.dataset = {};
+    value.attributes = [];
+    value.childNodes = [];
+    value.children = [];
+    value.textContent = tagName === 'BUTTON' ? 'Open' : '';
+    value.closest = () => null;
+    value.getBoundingClientRect = () => ({top: 20, left: 30, width, height});
+    value.cloneNode = () => ({
+      attributes: [], removeAttribute() {}, setAttribute() {}, appendChild() {}, outerHTML: '<' + tagName.toLowerCase() + '></' + tagName.toLowerCase() + '>'
+    });
+    return value;
+  }
+  const card = element('DIV', 'card', 766, 460);
+  const button = element('BUTTON', 'button', 764, 458);
+  const baseLayer = element('DIV', 'base', 764, 458);
+  const overlayLayer = element('DIV', 'overlay', 300, 360);
+  button.parentElement = card;
+  baseLayer.parentElement = card;
+  overlayLayer.parentElement = card;
+  card.children = [button, baseLayer, overlayLayer];
+  card.childNodes = card.children;
+
+  listeners.get('click')({target: button, preventDefault() {}, stopImmediatePropagation() {}});
+
+  assert.equal(sent[0].payload.title, 'button · 764 × 458');
+});
+
 test('ultimate mode asks the background worker to download a rendered full-page package', async () => {
   const messages = [];
   const {dispatch} = await startPicker({sendMessage(message) { messages.push(message); }});
