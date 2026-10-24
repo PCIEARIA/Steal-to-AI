@@ -2,7 +2,7 @@ function safePart(value) {
   return String(value || 'element').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) || 'element';
 }
 
-const liquidGlassDecisionPrompt = "Ask the user first whether this asset needs a liquid-glass treatment. If yes, use https://github.com/Minecraftgoose/GooseHyperGlassCDN only as an implementation reference: adapt only the necessary liquid-glass techniques into the user's existing project; do not copy the whole repository or replace their project stack. If no, recreate the asset faithfully from the captured code below.";
+const liquidGlassDecisionPrompt = "Ask the user first whether this asset needs a liquid-glass treatment. If yes, use https://github.com/martin65536/liquid-glass-webgl as an implementation reference: adapt only the necessary WebGL liquid-glass techniques into the user's existing project; do not copy the whole repository or replace their project stack. If no, recreate the asset faithfully from the captured code below.";
 
 function formatCode(payload) {
   const references = ['<!-- AI reconstruction instruction: ' + liquidGlassDecisionPrompt + ' -->'];
