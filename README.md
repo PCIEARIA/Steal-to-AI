@@ -89,9 +89,9 @@ Because this is an unpacked developer install, Chrome still requires you to pres
 
 | Mode | What is exported |
 | --- | --- |
-| Smart | Adds hover, focus, active, animation, and pseudo-element details only when available. |
+| Normal (default) | Adds hover, focus, active, animation, and pseudo-element details only when available. |
 | Include all | Tries to retain every accessible interaction rule. |
-| Static only | Omits animation, transitions, and interactive states. |
+| Static | Omits animation, transitions, and interactive states. |
 
 ## Screenshot reference
 
