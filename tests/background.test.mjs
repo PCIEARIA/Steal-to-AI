@@ -77,6 +77,29 @@ test('an extracted element notifies its source page that code is ready to copy',
   assert.match(message.code, /\.stai-button__lens is draggable/);
 });
 
+test('a canvas region export tells the AI to rebuild only the downloaded visual reference', async () => {
+  const source = await readFile(new URL('../extension/background.js', import.meta.url), 'utf8');
+  const sent = [];
+  let onMessage;
+  const chrome = {
+    runtime: {onMessage: {addListener(listener) { onMessage = listener; }}},
+    storage: {local: {async get() { return {}; }, async set() {}}},
+    tabs: {async sendMessage(tabId, message) { sent.push([tabId, message]); }},
+    downloads: {async download() {}},
+    scripting: {async executeScript() {}}
+  };
+
+  vm.runInNewContext(source, {chrome, FileReader: class {}, OffscreenCanvas: class {}, fetch() {}});
+  onMessage({type: 'STAI_EXTRACTION', payload: {
+    title: 'canvas region · 160 × 120', sourceUrl: 'https://example.com/glass', html: '<div class="stai-canvas-region"></div>', css: '', interactions: [],
+    canvasReference: {x: 30, y: 160, width: 160, height: 120, canvasWidth: 420, canvasHeight: 747}
+  }}, {tab: {id: 42, windowId: 9}}, () => {});
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.match(sent[0][1].code, /Canvas visual reference: This region is rasterized inside a canvas, so there is no original DOM\/CSS to copy/);
+  assert.match(sent[0][1].code, /Use the downloaded PNG and rebuild only the 160 × 120px area at canvas coordinates \(30, 160\)/);
+});
+
 test('a component bundle keeps each captured component separate in the copied code', async () => {
   const source = await readFile(new URL('../extension/background.js', import.meta.url), 'utf8');
   const state = {};

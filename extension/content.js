@@ -390,10 +390,46 @@
     return payload;
   }
 
+  function canvasPoint(canvas, event) {
+    const bounds = canvas.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(bounds.width, event.clientX - bounds.left)),
+      y: Math.max(0, Math.min(bounds.height, event.clientY - bounds.top))
+    };
+  }
+
+  function canvasRegion(selection) {
+    const bounds = selection.canvas.getBoundingClientRect();
+    const left = Math.round(Math.min(selection.start.x, selection.current.x));
+    const top = Math.round(Math.min(selection.start.y, selection.current.y));
+    const width = Math.round(Math.abs(selection.current.x - selection.start.x));
+    const height = Math.round(Math.abs(selection.current.y - selection.start.y));
+    return {
+      left, top, width, height,
+      capture: {x: Math.round(bounds.left + left), y: Math.round(bounds.top + top), width, height, scale: window.devicePixelRatio},
+      reference: {x: left, y: top, width, height, canvasWidth: Math.round(bounds.width), canvasHeight: Math.round(bounds.height)}
+    };
+  }
+
+  function extractCanvasRegion(selection) {
+    const region = canvasRegion(selection);
+    return {
+      title: 'canvas region · ' + region.width + ' × ' + region.height,
+      sourceUrl: location.href,
+      html: '<div class="stai-canvas-region" role="img" aria-label="Canvas visual reference"></div>',
+      css: '.stai-canvas-region {\n  width: ' + region.width + 'px;\n  height: ' + region.height + 'px;\n}',
+      interactions: [],
+      capture: region.capture,
+      canvasReference: region.reference
+    };
+  }
+
   function startPicker(inputPreferences) {
     if (activeStop) activeStop();
     const preferences = normalizedPreferences(inputPreferences);
     let selected = null;
+    let canvasSelection = null;
+    let suppressCanvasClick = false;
     const batch = [];
     const outline = document.createElement('div');
     const batchLayer = document.createElement('div');
@@ -412,6 +448,8 @@
     }
     function stop() {
       document.removeEventListener('pointermove', move, true);
+      document.removeEventListener('pointerdown', startCanvasSelection, true);
+      document.removeEventListener('pointerup', finishCanvasSelection, true);
       document.removeEventListener('click', choose, true);
       document.removeEventListener('keydown', keydown, true);
       outline.remove(); batchLayer.remove(); tooltip.remove(); activeStop = null;
@@ -434,7 +472,43 @@
         : ' · 已選 ' + batch.length + ' 個 · 按 Enter 匯出組合';
       return preferences.language === 'en' ? ' · Shift+click adds to bundle' : ' · Shift+點選可加入組合';
     }
+    function renderCanvasSelection() {
+      const region = canvasRegion(canvasSelection);
+      Object.assign(outline.style, {display: 'block', top: (canvasSelection.canvas.getBoundingClientRect().top + region.top) + 'px', left: (canvasSelection.canvas.getBoundingClientRect().left + region.left) + 'px', width: region.width + 'px', height: region.height + 'px'});
+      tooltip.textContent = preferences.language === 'en'
+        ? 'Canvas area · ' + region.width + ' × ' + region.height
+        : 'Canvas 區域 · ' + region.width + ' × ' + region.height;
+      Object.assign(tooltip.style, {display: 'block', top: Math.max(8, canvasSelection.canvas.getBoundingClientRect().top + region.top - 29) + 'px', left: Math.max(8, canvasSelection.canvas.getBoundingClientRect().left + region.left) + 'px'});
+    }
+    function startCanvasSelection(event) {
+      const target = targetOf(event);
+      if (!target || target.tagName !== 'CANVAS') return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      canvasSelection = {canvas: target, pointerId: event.pointerId, start: canvasPoint(target, event), current: canvasPoint(target, event)};
+      renderCanvasSelection();
+    }
+    function finishCanvasSelection(event) {
+      if (!canvasSelection || (event.pointerId !== undefined && event.pointerId !== canvasSelection.pointerId)) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      canvasSelection.current = canvasPoint(canvasSelection.canvas, event);
+      const region = canvasRegion(canvasSelection);
+      suppressCanvasClick = true;
+      if (region.width < 12 || region.height < 12) {
+        canvasSelection = null;
+        tooltip.textContent = preferences.language === 'en' ? 'Drag to select a canvas area' : '拖曳以框選 Canvas 區域';
+        return;
+      }
+      const payload = extractCanvasRegion(canvasSelection);
+      stop();
+      sendRuntimeMessage({type: 'STAI_EXTRACTION', payload, language: preferences.language});
+    }
     function move(event) {
+      if (canvasSelection && (event.pointerId === undefined || event.pointerId === canvasSelection.pointerId)) {
+        canvasSelection.current = canvasPoint(canvasSelection.canvas, event);
+        renderCanvasSelection();
+        event.preventDefault(); event.stopImmediatePropagation();
+        return;
+      }
       const target = targetOf(event); if (!target) return;
       selected = target;
       const box = target.getBoundingClientRect();
@@ -445,6 +519,10 @@
     function choose(event) {
       const target = targetOf(event) || selected; if (!target) return;
       event.preventDefault(); event.stopImmediatePropagation();
+      if (suppressCanvasClick && target.tagName === 'CANVAS') {
+        suppressCanvasClick = false;
+        return;
+      }
       if (event.shiftKey) {
         addBatchTarget(target, batch);
         selected = target;
@@ -474,6 +552,8 @@
       event.preventDefault(); stop(); sendRuntimeMessage({type: 'STAI_CANCELLED'});
     }
     document.addEventListener('pointermove', move, true);
+    document.addEventListener('pointerdown', startCanvasSelection, true);
+    document.addEventListener('pointerup', finishCanvasSelection, true);
     document.addEventListener('click', choose, true);
     document.addEventListener('keydown', keydown, true);
     activeStop = stop;

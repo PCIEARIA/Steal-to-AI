@@ -89,6 +89,10 @@ function formatCode(payload) {
   const reference = references.length ? references.join('\n') + '\n\n' : '';
   const code = components.map((component, index) => {
     const componentReferences = [];
+    if (component.canvasReference) {
+      const region = component.canvasReference;
+      componentReferences.push('<!-- Canvas visual reference: This region is rasterized inside a canvas, so there is no original DOM/CSS to copy. Use the downloaded PNG and rebuild only the ' + region.width + ' × ' + region.height + 'px area at canvas coordinates (' + region.x + ', ' + region.y + '). -->');
+    }
     for (const interaction of Array.isArray(component.interactions) ? component.interactions : []) {
       if (interaction && interaction.type === 'drag' && interaction.selector) {
         componentReferences.push('<!-- Interaction reference (inferred): ' + interaction.selector + ' is draggable. Recreate it with pointerdown, pointermove, and pointerup; keep it within the component bounds. -->');

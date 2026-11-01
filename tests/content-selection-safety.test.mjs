@@ -106,6 +106,28 @@ test('blocked source elements are ignored instead of crashing the picker', async
   assert.deepEqual(sent, []);
 });
 
+test('dragging within a canvas captures only the selected visual region', async () => {
+  const sent = [];
+  const {listeners, Element} = await startPicker({sendMessage(message) { sent.push(message); }});
+  const canvas = new Element();
+  canvas.nodeType = 1;
+  canvas.tagName = 'CANVAS';
+  canvas.dataset = {};
+  canvas.closest = () => null;
+  canvas.getBoundingClientRect = () => ({top: 100, left: 100, width: 420, height: 747});
+
+  listeners.get('pointerdown')({target: canvas, clientX:130, clientY:260, pointerId: 1, preventDefault() {}, stopImmediatePropagation() {}});
+  listeners.get('pointermove')({target: canvas, clientX:290, clientY:380, pointerId: 1, preventDefault() {}, stopImmediatePropagation() {}});
+  listeners.get('pointerup')({target: canvas, clientX:290, clientY:380, pointerId: 1, preventDefault() {}, stopImmediatePropagation() {}});
+
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].type, 'STAI_EXTRACTION');
+  assert.equal(sent[0].payload.title, 'canvas region · 160 × 120');
+  assert.equal(JSON.stringify(sent[0].payload.capture), JSON.stringify({x: 130, y: 260, width: 160, height: 120, scale: 2}));
+  assert.equal(JSON.stringify(sent[0].payload.canvasReference), JSON.stringify({x: 30, y: 160, width: 160, height: 120, canvasWidth: 420, canvasHeight: 747}));
+  assert.match(sent[0].payload.html, /stai-canvas-region/);
+});
+
 test('an invalidated extension context does not throw while cancelling selection', async () => {
   const {listeners} = await startPicker({sendMessage() { throw new Error('Extension context invalidated.'); }});
 
