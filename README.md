@@ -131,8 +131,10 @@ Licensed under the [GNU General Public License v3.0 only](LICENSE).
 
 [View the full source screenshot](demo/assets/98-css-source.png) · [View the demo HTML](demo/win98-window.html)
 
-### Theme and color switch
+### Theme preview interface
 
-[![Theme and color switch reconstructed from the captured component](demo/assets/theme-switch-comparison.png)](demo/theme-switch.html)
+[![Full theme preview interface reconstructed from the captured markup](demo/assets/theme-switch-comparison.png)](demo/theme-switch.html)
+
+The captured 628 × 527 preview has an empty central stage; this demo preserves its layout and top-right controls on a white background.
 
 [View the interactive demo HTML](demo/theme-switch.html) · [View the source component](https://uiverse.io/andrew-demchenk0/afraid-cougar-9)
