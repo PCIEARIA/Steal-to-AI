@@ -6,6 +6,19 @@
   <meta name="color-scheme" content="light">
   <title>Steal to AI | Windows 98 window reconstruction</title>
   <style>
+    /* Pixelated MS Sans Serif from 98.css v0.1.21; see assets/98-css-LICENSE.txt. */
+    @font-face {
+      font-family: "Pixelated MS Sans Serif";
+      src: url("assets/ms_sans_serif.woff2") format("woff2");
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Pixelated MS Sans Serif";
+      src: url("assets/ms_sans_serif_bold.woff2") format("woff2");
+      font-weight: 700;
+      font-display: swap;
+    }
     :root { color-scheme: light; }
     * { box-sizing: border-box; }
     html, body { min-height: 100%; }
@@ -17,12 +30,13 @@
       place-items: center;
       background: #fff;
       color: #222;
-      font: 11px/1.5 Tahoma, Arial, sans-serif;
+      font: 11px/1.5 "Pixelated MS Sans Serif", Arial, sans-serif;
     }
     button { font: inherit; }
     .window {
       width: 256px;
       padding: 3px;
+      transform: translateY(-1px);
       background: #c0c0c0;
       box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf,
         inset -2px -2px #808080, inset 2px 2px #fff;
@@ -39,7 +53,7 @@
       line-height: 14px;
     }
     .title-bar-title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-    .title-bar-controls { display: flex; flex: none; gap: 2px; margin-left: 8px; }
+    .title-bar-controls { display: flex; flex: none; margin-left: 8px; }
     .title-bar-controls button, .actions button {
       display: grid;
       place-items: center;
@@ -52,18 +66,40 @@
       cursor: default;
     }
     .title-bar-controls button { position: relative; width: 16px; height: 14px; padding: 0; }
+    .title-bar-controls .close { margin-left: 2px; }
     .title-bar-controls button:active, .actions button:active {
       box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
         inset -2px -2px #dfdfdf, inset 2px 2px #808080;
     }
     button:focus-visible { outline: 1px dotted #000; outline-offset: -4px; }
-    .minimize::before { content: ''; position: absolute; left: 5px; bottom: 4px; width: 6px; height: 2px; background: #000; }
-    .maximize::before { content: ''; position: absolute; left: 4px; top: 3px; width: 8px; height: 8px; border: 1px solid #000; border-top-width: 2px; }
-    .close::before, .close::after { content: ''; position: absolute; left: 4px; top: 6px; width: 9px; height: 2px; background: #000; }
-    .close::before { transform: rotate(45deg); }
-    .close::after { transform: rotate(-45deg); }
+    .minimize::before { content: ''; position: absolute; left: 4px; bottom: 3px; width: 6px; height: 2px; background: #000; }
+    .maximize::before { content: ''; position: absolute; left: 3px; top: 2px; width: 9px; height: 9px; background: #000; }
+    .maximize::after { content: ''; position: absolute; left: 4px; top: 4px; width: 7px; height: 6px; background: #c0c0c0; }
+    .close::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 3px;
+      width: 8px;
+      height: 7px;
+      background:
+        linear-gradient(#000 0 0) 0 0 / 2px 1px,
+        linear-gradient(#000 0 0) 6px 0 / 2px 1px,
+        linear-gradient(#000 0 0) 1px 1px / 2px 1px,
+        linear-gradient(#000 0 0) 5px 1px / 2px 1px,
+        linear-gradient(#000 0 0) 2px 2px / 2px 1px,
+        linear-gradient(#000 0 0) 4px 2px / 2px 1px,
+        linear-gradient(#000 0 0) 3px 3px / 2px 1px,
+        linear-gradient(#000 0 0) 2px 4px / 2px 1px,
+        linear-gradient(#000 0 0) 4px 4px / 2px 1px,
+        linear-gradient(#000 0 0) 1px 5px / 2px 1px,
+        linear-gradient(#000 0 0) 5px 5px / 2px 1px,
+        linear-gradient(#000 0 0) 0 6px / 2px 1px,
+        linear-gradient(#000 0 0) 6px 6px / 2px 1px;
+      background-repeat: no-repeat;
+    }
     .window-body { margin: 8px; }
-    .window-body p { margin: 11px 0; line-height: 16.5px; }
+    .window-body p { margin: 10px 0 11px; line-height: 16.5px; }
     .actions { display: flex; justify-content: flex-end; gap: 6px; }
     .actions button { width: 75px; height: 23px; padding: 0 12px; line-height: 1; }
     @media (max-width: 300px) { body { padding: 12px; } .window { max-width: 100%; } }

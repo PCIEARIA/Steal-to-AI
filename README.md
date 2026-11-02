@@ -99,7 +99,7 @@ Enable **儲存選取區域截圖** / **Save selected-area screenshot** in the c
 
 ## Component reconstruction demo
 
-The [Windows 98 dialog demo](demo/win98-window.html) reconstructs one component captured from [98.css](https://jdan.github.io/98.css/#button) on a plain white page. The [source-page screenshot](demo/assets/98-css-source.png) is included for visual comparison. The demo is a standalone HTML file and does not include the source site's scripts or layout.
+The [Windows 98 dialog demo](demo/win98-window.html) reconstructs one component captured from [98.css](https://jdan.github.io/98.css/#button) on a plain white page. The [source-page screenshot](demo/assets/98-css-source.png) is included for visual comparison. The demo is a standalone HTML file and does not include the source site's scripts or layout. It uses the Pixelated MS Sans Serif font distributed with 98.css under its [MIT license](demo/assets/98-css-LICENSE.txt).
 
 ## Limits
 
