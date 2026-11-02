@@ -85,7 +85,8 @@
     Object.assign(field.style, {position: 'fixed', opacity: '0', pointerEvents: 'none'});
     document.documentElement.append(field);
     field.select();
-    const copied = typeof document.execCommand === 'function' && document.execCommand('copy');
+    let copied = false;
+    try { copied = typeof document.execCommand === 'function' && document.execCommand('copy'); } catch {}
     field.remove();
     return copied;
   }
@@ -95,6 +96,7 @@
     const toast = document.createElement('div');
     const message = document.createElement('span');
     const copyButton = document.createElement('button');
+    const closeButton = document.createElement('button');
     const english = language === 'en';
     toast.dataset.staiOverlay = 'true';
     toast.setAttribute('role', 'status');
@@ -104,6 +106,9 @@
       : '已擷取 ' + title + '。現在可直接複製，或稍後開啟 Steal to AI。';
     copyButton.type = 'button';
     copyButton.textContent = english ? 'Copy code' : '複製程式碼';
+    closeButton.type = 'button';
+    closeButton.textContent = '×';
+    closeButton.setAttribute('aria-label', english ? 'Dismiss notification' : '關閉通知');
     Object.assign(toast.style, {
       position: 'fixed', right: '18px', bottom: '18px', zIndex: '2147483647', maxWidth: '340px',
       display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 11px 10px 14px', border: '1px solid rgba(215,255,100,.72)', borderRadius: '8px',
@@ -116,23 +121,31 @@
       flex: '0 0 auto', border: '1px solid #d7ff64', borderRadius: '5px', padding: '7px 8px',
       color: '#10140d', background: '#d7ff64', font: '800 11px/1 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', cursor: 'pointer'
     });
+    Object.assign(closeButton.style, {
+      flex: '0 0 auto', alignSelf: 'flex-start', border: '0', padding: '0 2px',
+      color: '#b8bdc6', background: 'transparent', font: '18px/1 ui-sans-serif, sans-serif', cursor: 'pointer'
+    });
     copyButton.addEventListener('click', async (event) => {
+      event.preventDefault();
       event.stopPropagation();
       const copied = await copyCode(code);
-      copyButton.textContent = copied ? (english ? 'Copied' : '已複製') : (english ? 'Copy failed' : '無法複製');
+      message.textContent = copied
+        ? (english ? 'Code copied to clipboard. Ready to paste into your AI.' : '程式碼已複製到剪貼板，可以貼給 AI。')
+        : (english ? 'Copy failed. Try again or copy from Steal to AI.' : '複製失敗，請重試或到 Steal to AI 複製。');
+      copyButton.textContent = copied ? (english ? 'Copied' : '已複製') : (english ? 'Retry' : '重試');
     });
-    toast.addEventListener('click', () => toast.remove());
-    toast.append(message, copyButton);
+    closeButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (captureToast === toast) captureToast = null;
+      toast.remove();
+    });
+    toast.append(message, copyButton, closeButton);
     document.documentElement.append(toast);
     captureToast = toast;
     requestAnimationFrame(() => {
       toast.style.opacity = '1';
       toast.style.transform = 'translateY(0)';
     });
-    window.setTimeout(() => {
-      if (captureToast === toast) captureToast = null;
-      toast.remove();
-    }, 8000);
   }
 
   function showSourceDownloaded(language, filename, omitted) {
