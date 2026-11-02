@@ -97,6 +97,10 @@ Because this is an unpacked developer install, Chrome still requires you to pres
 
 Enable **儲存選取區域截圖** / **Save selected-area screenshot** in the compact panel to download a PNG crop of the visible selected area to Chrome's default Downloads folder.
 
+## Component reconstruction demo
+
+The [Windows 98 dialog demo](demo/win98-window.html) reconstructs one component captured from [98.css](https://jdan.github.io/98.css/#button) on a plain white page. The [source-page screenshot](demo/assets/98-css-source.png) is included for visual comparison. The demo is a standalone HTML file and does not include the source site's scripts or layout.
+
 ## Limits
 
 - Chrome internal pages, the Chrome Web Store, PDFs, browser-native controls, canvas pixels, and closed shadow DOM cannot be selected.

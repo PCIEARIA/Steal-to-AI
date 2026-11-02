@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Steal to AI | Windows 98 window reconstruction</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      display: grid;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      place-items: center;
+      background: #fff;
+      color: #222;
+      font: 11px/1.5 Tahoma, Arial, sans-serif;
+    }
+    button { font: inherit; }
+    .window {
+      width: 256px;
+      padding: 3px;
+      background: #c0c0c0;
+      box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf,
+        inset -2px -2px #808080, inset 2px 2px #fff;
+    }
+    .title-bar {
+      display: flex;
+      height: 20px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 2px 2px 3px;
+      background: linear-gradient(90deg, navy, #1084d0);
+      color: #fff;
+      font-weight: 700;
+      line-height: 14px;
+    }
+    .title-bar-title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .title-bar-controls { display: flex; flex: none; gap: 2px; margin-left: 8px; }
+    .title-bar-controls button, .actions button {
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 0;
+      background: #c0c0c0;
+      color: #222;
+      box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+        inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+      cursor: default;
+    }
+    .title-bar-controls button { position: relative; width: 16px; height: 14px; padding: 0; }
+    .title-bar-controls button:active, .actions button:active {
+      box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
+        inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+    }
+    button:focus-visible { outline: 1px dotted #000; outline-offset: -4px; }
+    .minimize::before { content: ''; position: absolute; left: 5px; bottom: 4px; width: 6px; height: 2px; background: #000; }
+    .maximize::before { content: ''; position: absolute; left: 4px; top: 3px; width: 8px; height: 8px; border: 1px solid #000; border-top-width: 2px; }
+    .close::before, .close::after { content: ''; position: absolute; left: 4px; top: 6px; width: 9px; height: 2px; background: #000; }
+    .close::before { transform: rotate(45deg); }
+    .close::after { transform: rotate(-45deg); }
+    .window-body { margin: 8px; }
+    .window-body p { margin: 11px 0; line-height: 16.5px; }
+    .actions { display: flex; justify-content: flex-end; gap: 6px; }
+    .actions button { width: 75px; height: 23px; padding: 0 12px; line-height: 1; }
+    @media (max-width: 300px) { body { padding: 12px; } .window { max-width: 100%; } }
+  </style>
+</head>
+<body>
+  <main class="window" aria-label="Windows 98 dialog">
+    <div class="title-bar">
+      <span class="title-bar-title">My First VB4 Program</span>
+      <div class="title-bar-controls">
+        <button class="minimize" type="button" aria-label="Minimize"></button>
+        <button class="maximize" type="button" aria-label="Maximize"></button>
+        <button class="close" type="button" aria-label="Close"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <p>Hello, world!</p>
+      <div class="actions">
+        <button type="button">OK</button>
+        <button type="button">Cancel</button>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
