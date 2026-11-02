@@ -122,3 +122,9 @@ Load the `extension/` directory through Chrome's **Load unpacked** workflow, the
 Copyright © 2026 PCIEARIA.
 
 Licensed under the [GNU General Public License v3.0 only](LICENSE).
+
+## Demo
+
+![Windows 98 dialog reconstructed on a white page](demo/assets/win98-window-demo.png)
+
+[View the demo HTML](demo/win98-window.html) · [View the source screenshot](demo/assets/98-css-source.png)
