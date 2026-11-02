@@ -72,6 +72,7 @@ test('an extracted element notifies its source page that code is ready to copy',
   assert.equal(message.language, 'zh');
   assert.match(message.code, /Check whether the steal-to-ai-component skill is available in your environment and read its version field/);
   assert.match(message.code, /This export requires version 0\.1\.1 or newer/);
+  assert.match(message.code, /load and use \$steal-to-ai-component for this component/);
   assert.match(message.code, /If it is unavailable, has no version, or is older, ask the user once whether they want to install or update it/);
   assert.match(message.code, /<!-- Source reference: https:\/\/example\.com\/button -->/);
   assert.match(message.code, /\.stai-button__lens is draggable/);

@@ -75,7 +75,7 @@ let lastPayload = null;
 let codeCopyCount = 0;
 const starPromptUrl = 'https://github.com/PCIEARIA/Steal-to-AI';
 const companionSkillVersion = '0.1.1';
-const companionSkillPrompt = 'Check whether the steal-to-ai-component skill is available in your environment and read its version field. This export requires version ' + companionSkillVersion + ' or newer. If the installed Skill meets that version, use it and continue without asking. If it is unavailable, has no version, or is older, ask the user once whether they want to install or update it from https://github.com/PCIEARIA/Steal-to-AI/tree/main/skills/steal-to-ai-component for a better component-integration workflow. If they decline or installation/update is unavailable, continue without blocking or asking again.';
+const companionSkillPrompt = 'Check whether the steal-to-ai-component skill is available in your environment and read its version field. This export requires version ' + companionSkillVersion + ' or newer. If the installed Skill meets that version, load and use $steal-to-ai-component for this component without asking. If it is unavailable, has no version, or is older, ask the user once whether they want to install or update it from https://github.com/PCIEARIA/Steal-to-AI/tree/main/skills/steal-to-ai-component. If they decline or installation/update is unavailable, continue without blocking or asking again.';
 const liquidGlassDecisionPrompt = "Ask the user first whether this asset needs a liquid-glass treatment. If yes, use https://github.com/martin65536/liquid-glass-webgl as an implementation reference. Before copying any code, ask whether the user owns the rights or has permission to copy and integrate the referenced code. If the user confirms, copy only the necessary component code, preserve required attribution and license notices, and comply with its license; do not copy the whole repository or replace their project stack. If not, adapt only the necessary techniques. If no, recreate the asset faithfully from the captured code below.";
 
 function formatCode(payload) {
@@ -110,6 +110,7 @@ function formatComponentPrompt(payload) {
   if (preferences.language === 'zh') {
     return [
       '請將下列 UI 元件加入我目前的專案。',
+      '請先檢查配套 Skill steal-to-ai-component 的版本；若已安裝 0.1.1 或更新版本，請載入並使用 $steal-to-ai-component 完成這個元件。若未安裝或版本較舊，先詢問我一次是否要從 https://github.com/PCIEARIA/Steal-to-AI/tree/main/skills/steal-to-ai-component 安裝或更新；若我拒絕或無法安裝，就直接繼續。',
       '規則：\n- 只建立或修改這一個元件；不要重做整個頁面。\n- 沿用我現有的技術棧、設計系統、檔案結構與元件規範。\n- 保留擷取到的外觀、尺寸比例、互動狀態與動畫。\n- 若外部圖片、字型或素材不能直接使用，請以本地可維護的方式重建。\n- 完成後告訴我修改了哪些檔案。',
       '元件：\n' + (payload.title || '已選取元件'),
       payload.sourceUrl ? '來源頁面：\n' + payload.sourceUrl : '',
@@ -118,6 +119,7 @@ function formatComponentPrompt(payload) {
   }
   return [
     'Add the UI component below to my existing project.',
+    'First check the version of the companion steal-to-ai-component Skill. If version 0.1.1 or newer is installed, load and use $steal-to-ai-component for this component. Otherwise ask me once whether to install or update it from https://github.com/PCIEARIA/Steal-to-AI/tree/main/skills/steal-to-ai-component; if I decline or installation is unavailable, continue directly.',
     'Rules:\n- Create or modify only this component; do not rebuild the whole page.\n- Follow my existing stack, design system, file structure, and component conventions.\n- Preserve the captured visual details, proportions, interactions, and motion.\n- Rebuild inaccessible external assets with maintainable local equivalents.\n- Tell me which files you changed when finished.',
     'Component:\n' + (payload.title || 'Selected component'),
     payload.sourceUrl ? 'Source page:\n' + payload.sourceUrl : '',

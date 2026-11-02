@@ -86,8 +86,18 @@ test('copying a component prompt scopes AI work to the selected UI component', a
   await copyComponentPrompt.handlers.click();
 
   assert.match(clipboardWrites[0], /請將下列 UI 元件加入我目前的專案。/);
+  assert.match(clipboardWrites[0], /請載入並使用 \$steal-to-ai-component/);
+  assert.match(clipboardWrites[0], /0\.1\.1 或更新版本/);
   assert.match(clipboardWrites[0], /只建立或修改這一個元件；不要重做整個頁面。/);
   assert.ok(clipboardWrites[0].includes('來源頁面：' + String.fromCharCode(10) + 'https://example.com/components/button'));
   assert.ok(clipboardWrites[0].includes('<button class="stai-button">Save</button>'));
   assert.equal(status.textContent, '已複製元件提示詞。貼到你的 AI 編程工具即可。');
+
+  await copy.handlers.click();
+  assert.match(clipboardWrites[1], /load and use \$steal-to-ai-component for this component/);
+
+  await en.handlers.click();
+  await copyComponentPrompt.handlers.click();
+  assert.match(clipboardWrites[2], /load and use \$steal-to-ai-component for this component/);
+  assert.match(clipboardWrites[2], /version 0\.1\.1 or newer/);
 });
