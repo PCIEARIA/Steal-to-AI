@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Steal to AI | Windows 98 controls</title>
+  <style>
+    /* Pixelated MS Sans Serif from 98.css v0.1.21; see assets/98-css-LICENSE.txt. */
+    @font-face {
+      font-family: "Pixelated MS Sans Serif";
+      src: url("assets/ms_sans_serif.woff2") format("woff2");
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Pixelated MS Sans Serif";
+      src: url("assets/ms_sans_serif_bold.woff2") format("woff2");
+      font-weight: 700;
+      font-display: swap;
+    }
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      display: grid;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      padding: 32px;
+      place-items: center;
+      background: #fff;
+      color: #222;
+      font: 11px/13px "Pixelated MS Sans Serif", Arial, sans-serif;
+    }
+    .gallery {
+      display: grid;
+      width: min(760px, 100%);
+      gap: 42px;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+    .win-button {
+      min-width: 75px;
+      height: 23px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 0;
+      background: silver;
+      box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+        inset -2px -2px gray, inset 2px 2px #dfdfdf;
+      color: transparent;
+      font: inherit;
+      text-align: center;
+      text-shadow: 0 0 #222;
+      cursor: default;
+    }
+    .win-button:focus-visible, .win-button.focused {
+      outline: 1px dotted #000;
+      outline-offset: -4px;
+    }
+    .win-button:active, .win-button.pressed {
+      box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
+        inset -2px -2px #dfdfdf, inset 2px 2px gray;
+      text-shadow: 1px 1px #222;
+    }
+    .pressed { width: 109px; }
+    .focused { width: 82px; }
+    .choices {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 28px 56px;
+      align-items: start;
+    }
+    .choice {
+      position: relative;
+      display: block;
+      width: fit-content;
+      min-height: 13px;
+      padding-left: 19px;
+      cursor: default;
+    }
+    .choice input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+      opacity: 0;
+    }
+    .choice span { display: inline-block; line-height: 13px; }
+    .choice span::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 13px;
+      height: 13px;
+      background: #fff;
+      box-shadow: inset -1px -1px #fff, inset 1px 1px gray,
+        inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+      content: "";
+    }
+    .choice input:focus-visible + span { outline: 1px dotted #000; }
+    .checkbox input:checked + span::after {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 7px;
+      height: 7px;
+      background: #000;
+      clip-path: polygon(0 28%, 29% 57%, 86% 0, 100% 0, 100% 29%, 29% 100%, 0 71%);
+      content: "";
+    }
+    .radio { padding-left: 18px; }
+    .radio span::before {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: inset -1px -1px #fff, inset 1px 1px gray,
+        inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+    }
+    .radio input:checked + span::after {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #000;
+      content: "";
+    }
+    .radio + .radio { margin-top: 22px; }
+    details { margin-top: 12px; font: 12px/14px Arial, sans-serif; }
+    summary { width: fit-content; cursor: pointer; }
+    summary:focus-visible { outline: 1px dotted #000; }
+    pre {
+      max-width: 100%;
+      margin: 6px 0 0;
+      padding: 12px 8px;
+      overflow: auto;
+      background: #fff;
+      box-shadow: inset -1px -1px #fff, inset 1px 1px gray,
+        inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+      font: 12px/16px monospace;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    @media (max-width: 560px) {
+      body { padding: 24px; }
+      .choices { grid-template-columns: 1fr; gap: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Source reference: https://jdan.github.io/98.css/#intro -->
+  <main class="gallery" aria-label="Windows 98 control reconstructions">
+    <form class="buttons" id="controls-form" aria-label="Buttons">
+      <button class="win-button" type="button">Click me</button>
+      <input class="win-button" type="submit" value="Submit">
+      <input class="win-button" type="reset" value="Reset">
+      <button class="win-button pressed" type="button">I am being pressed</button>
+      <button class="win-button focused" type="button">I am focused</button>
+    </form>
+    <div class="choices" aria-label="Checkbox and radio controls">
+      <div>
+        <label class="choice checkbox">
+          <input type="checkbox" id="example1" form="controls-form">
+          <span>This is a checkbox</span>
+        </label>
+        <details>
+          <summary>Show code</summary>
+          <pre><code>&lt;input type="checkbox" id="example1"&gt;
+&lt;label for="example1"&gt;This is a checkbox&lt;/label&gt;</code></pre>
+        </details>
+      </div>
+      <div>
+        <label class="choice radio">
+          <input type="radio" name="first-example" value="yes" form="controls-form">
+          <span>Yes</span>
+        </label>
+        <label class="choice radio">
+          <input type="radio" name="peanut-butter" value="smooth" form="controls-form">
+          <span>Peanut butter should be smooth</span>
+        </label>
+      </div>
+    </div>
+    <output id="status" class="sr-only" role="status"></output>
+  </main>
+  <script>
+    const form = document.querySelector('#controls-form');
+    const status = document.querySelector('#status');
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      status.value = 'Submitted';
+    });
+    form.addEventListener('reset', () => { status.value = 'Reset'; });
+  </script>
+</body>
+</html>

@@ -101,6 +101,8 @@ Enable **儲存選取區域截圖** / **Save selected-area screenshot** in the c
 
 The [Windows 98 dialog demo](demo/win98-window.html) reconstructs one component captured from [98.css](https://jdan.github.io/98.css/#button) on a plain white page. The [source-page screenshot](demo/assets/98-css-source.png) is included for visual comparison. The demo is a standalone HTML file and does not include the source site's scripts or layout. It uses the Pixelated MS Sans Serif font distributed with 98.css under its [MIT license](demo/assets/98-css-LICENSE.txt).
 
+The [Windows 98 controls demo](demo/win98-controls.html) reconstructs eight separately captured button, checkbox, and radio controls on the same white background.
+
 ## Limits
 
 - Chrome internal pages, the Chrome Web Store, PDFs, browser-native controls, canvas pixels, and closed shadow DOM cannot be selected.
@@ -130,3 +132,9 @@ Licensed under the [GNU General Public License v3.0 only](LICENSE).
 | [![Windows 98 dialog on the 98.css website](demo/assets/98-css-dialog-reference.png)](demo/assets/98-css-source.png) | [![Windows 98 dialog reconstructed on a white page](demo/assets/win98-window-comparison.png)](demo/win98-window.html) |
 
 [View the full source screenshot](demo/assets/98-css-source.png) · [View the demo HTML](demo/win98-window.html)
+
+### More Windows 98 controls
+
+[![Eight Windows 98 controls reconstructed on a white page](demo/assets/win98-controls-demo.png)](demo/win98-controls.html)
+
+[View the interactive controls](demo/win98-controls.html) · [View the source page](https://jdan.github.io/98.css/#intro)
