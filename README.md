@@ -125,6 +125,8 @@ Licensed under the [GNU General Public License v3.0 only](LICENSE).
 
 ## Demo
 
-![Windows 98 dialog reconstructed on a white page](demo/assets/win98-window-demo.png)
+| Source website | Steal to AI reconstruction |
+| --- | --- |
+| [![Windows 98 dialog on the 98.css website](demo/assets/98-css-dialog-reference.png)](demo/assets/98-css-source.png) | [![Windows 98 dialog reconstructed on a white page](demo/assets/win98-window-comparison.png)](demo/win98-window.html) |
 
-[View the demo HTML](demo/win98-window.html) · [View the source screenshot](demo/assets/98-css-source.png)
+[View the full source screenshot](demo/assets/98-css-source.png) · [View the demo HTML](demo/win98-window.html)
