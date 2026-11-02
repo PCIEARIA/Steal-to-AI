@@ -130,3 +130,9 @@ Licensed under the [GNU General Public License v3.0 only](LICENSE).
 | [![Windows 98 dialog on the 98.css website](demo/assets/98-css-dialog-reference.png)](demo/assets/98-css-source.png) | [![Windows 98 dialog reconstructed on a white page](demo/assets/win98-window-comparison.png)](demo/win98-window.html) |
 
 [View the full source screenshot](demo/assets/98-css-source.png) · [View the demo HTML](demo/win98-window.html)
+
+### Theme and color switch
+
+[![Theme and color switch reconstructed from the captured component](demo/assets/theme-switch-comparison.png)](demo/theme-switch.html)
+
+[View the interactive demo HTML](demo/theme-switch.html) · [View the source component](https://uiverse.io/andrew-demchenk0/afraid-cougar-9)
